@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NormalizedTrace, TraceEvent } from "@/lib/trace";
+import AgentAvatar from "./AgentAvatars";
 
 interface TeamilyWorkspaceProps {
   traceData: NormalizedTrace;
@@ -57,19 +58,54 @@ export default function TeamilyWorkspace({
   const [triggerFailure, setTriggerFailure] = useState(true);
   const [copied, setCopied] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [geminiMessage, setGeminiMessage] = useState<string>(
+    "Jeevan, I'm the VulnSentry Lead AI Agent powered by Gemini 3.6 Flash. I'm actively monitoring your audit pipeline alongside our 4 specialized guardrails: The Shield, Self-Healer, Context Optimizer, and Glass-Box Tracer."
+  );
+  const [isGeminiLoading, setIsGeminiLoading] = useState(false);
 
-  const handlePresetSelect = (type: "sqli" | "secrets" | "clean") => {
+  // Fetch live reasoning commentary from Gemini API
+  const fetchGeminiCommentary = async (codeToAudit: string, hasFail: boolean) => {
+    setIsGeminiLoading(true);
+    try {
+      const res = await fetch("/api/gemini/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: codeToAudit,
+          finding: traceData.finding,
+          shieldStatus: hasFail ? "blocked" : "passed",
+          hasFailure: hasFail,
+          contextSavings: traceData.context?.reduction_percentage || "42.8%",
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.message) {
+          setGeminiMessage(data.message);
+        }
+      }
+    } catch (err) {
+      console.warn("Gemini commentary error:", err);
+    } finally {
+      setIsGeminiLoading(false);
+    }
+  };
+
+  const handlePresetSelect = async (type: "sqli" | "secrets" | "clean") => {
     const code = PRESET_CODE[type];
     setInputCode(code);
     setSubmittedCode(code);
-    onRunCustomAudit(code, triggerFailure);
+    await onRunCustomAudit(code, triggerFailure);
+    fetchGeminiCommentary(code, triggerFailure);
   };
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputCode.trim() || isRunning) return;
-    setSubmittedCode(inputCode);
-    onRunCustomAudit(inputCode, triggerFailure);
+    const code = inputCode;
+    setSubmittedCode(code);
+    await onRunCustomAudit(code, triggerFailure);
+    fetchGeminiCommentary(code, triggerFailure);
   };
 
   const handleCopyTrace = () => {
@@ -91,7 +127,7 @@ export default function TeamilyWorkspace({
       <nav className="w-16 bg-white border-r border-slate-200/80 flex flex-col items-center py-4 justify-between shrink-0 select-none">
         <div className="flex flex-col items-center space-y-6">
           {/* Teamily Style Brand Logo (Green Square with Avatar) */}
-          <div className="h-10 w-10 rounded-2xl bg-[#00c968] flex items-center justify-center text-white shadow-sm shadow-emerald-200">
+          <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-[#00c968] to-[#059669] flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" />
             </svg>
@@ -102,7 +138,7 @@ export default function TeamilyWorkspace({
             {/* Chat (Active with green highlight) */}
             <button
               title="Agent Chat"
-              className="p-2.5 rounded-xl bg-[#eaf8f0] text-[#00c968] hover:text-[#00b05b] transition-colors relative"
+              className="p-2.5 rounded-xl bg-[#eaf8f0] text-[#00c968] hover:text-[#00b05b] transition-colors relative shadow-2xs"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -145,16 +181,14 @@ export default function TeamilyWorkspace({
           </div>
         </div>
 
-        {/* Bottom User Avatar */}
-        <div className="h-9 w-9 rounded-full bg-slate-200 border-2 border-white shadow flex items-center justify-center text-xs font-bold text-slate-600">
-          JJ
-        </div>
+        {/* Bottom User Avatar with status dot */}
+        <AgentAvatar type="user" size="sm" />
       </nav>
 
       {/* ========================================================================= */}
-      {/* 2. CHANNELS / AGENTS LIST (Teamily AI Middle Column)                      */}
+      {/* 2. CHANNELS / AGENTS LIST (Teamily AI Middle Column with High-Def DPs)    */}
       {/* ========================================================================= */}
-      <aside className="w-72 bg-[#fafcfb] border-r border-slate-200/80 flex flex-col shrink-0">
+      <aside className="w-76 bg-[#fafcfb] border-r border-slate-200/80 flex flex-col shrink-0">
         {/* Search Header */}
         <div className="p-3.5 flex items-center space-x-2 border-b border-slate-100">
           <div className="flex-1 bg-white border border-slate-200/90 rounded-xl px-3 py-1.5 flex items-center text-xs text-slate-400 shadow-2xs">
@@ -163,7 +197,7 @@ export default function TeamilyWorkspace({
             </svg>
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Search agents or threads..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-transparent border-none outline-none text-xs text-slate-700 placeholder-slate-400 w-full"
@@ -173,7 +207,7 @@ export default function TeamilyWorkspace({
           <button
             onClick={() => handlePresetSelect("sqli")}
             title="New Audit"
-            className="h-8 w-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-500 shadow-2xs transition-colors"
+            className="h-8 w-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-500 shadow-2xs transition-colors font-bold text-sm"
           >
             +
           </button>
@@ -186,20 +220,18 @@ export default function TeamilyWorkspace({
             onClick={() => setActiveTab("team")}
             className={`p-2.5 rounded-2xl cursor-pointer transition-all flex items-center space-x-3 ${
               activeTab === "team"
-                ? "bg-[#eaf8f0] text-slate-900 shadow-2xs"
-                : "hover:bg-slate-100 text-slate-700"
+                ? "bg-[#eaf8f0] text-slate-900 shadow-2xs border border-emerald-200/60"
+                : "hover:bg-slate-100 text-slate-700 border border-transparent"
             }`}
           >
-            <div className="h-10 w-10 rounded-full bg-[#00c968] text-white flex items-center justify-center text-sm font-bold shadow-xs shrink-0">
-              🛡️
-            </div>
+            <AgentAvatar type="orchestrator" size="md" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-900 truncate">VulnSentry Team</span>
-                <span className="text-[10px] text-slate-400 font-mono">Live</span>
+                <span className="text-xs font-bold text-slate-900 truncate">VulnSentry Team</span>
+                <span className="text-[10px] text-emerald-600 font-mono font-bold">Live</span>
               </div>
-              <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                Glass-Box Autonomous SOC
+              <p className="text-[11px] text-slate-500 truncate mt-0.5 font-medium">
+                Gemini 3.6 Flash &bull; Autonomous SOC
               </p>
             </div>
           </div>
@@ -214,16 +246,14 @@ export default function TeamilyWorkspace({
             onClick={() => setActiveTab("shield")}
             className={`p-2.5 rounded-2xl cursor-pointer transition-all flex items-center space-x-3 ${
               activeTab === "shield"
-                ? "bg-[#eaf8f0] text-slate-900 shadow-2xs"
-                : "hover:bg-slate-100 text-slate-700"
+                ? "bg-[#eaf8f0] text-slate-900 shadow-2xs border border-amber-200/60"
+                : "hover:bg-slate-100 text-slate-700 border border-transparent"
             }`}
           >
-            <div className="h-9 w-9 rounded-full bg-amber-100 border border-amber-200 text-amber-700 flex items-center justify-center text-xs font-bold shrink-0">
-              🛡️
-            </div>
+            <AgentAvatar type="shield" size="md" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-800 truncate">The Shield</span>
+                <span className="text-xs font-bold text-slate-800 truncate">The Shield</span>
                 <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-bold">P1</span>
               </div>
               <p className="text-[11px] text-slate-500 truncate">tool_validator.py &bull; Guardrail</p>
@@ -235,16 +265,14 @@ export default function TeamilyWorkspace({
             onClick={() => setActiveTab("healer")}
             className={`p-2.5 rounded-2xl cursor-pointer transition-all flex items-center space-x-3 ${
               activeTab === "healer"
-                ? "bg-[#eaf8f0] text-slate-900 shadow-2xs"
-                : "hover:bg-slate-100 text-slate-700"
+                ? "bg-[#eaf8f0] text-slate-900 shadow-2xs border border-emerald-200/60"
+                : "hover:bg-slate-100 text-slate-700 border border-transparent"
             }`}
           >
-            <div className="h-9 w-9 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center text-xs font-bold shrink-0">
-              🔄
-            </div>
+            <AgentAvatar type="healer" size="md" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-800 truncate">Self-Healer</span>
+                <span className="text-xs font-bold text-slate-800 truncate">Self-Healer</span>
                 <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold">P2</span>
               </div>
               <p className="text-[11px] text-slate-500 truncate">failure_interceptor.py &bull; Fix</p>
@@ -256,16 +284,14 @@ export default function TeamilyWorkspace({
             onClick={() => setActiveTab("context")}
             className={`p-2.5 rounded-2xl cursor-pointer transition-all flex items-center space-x-3 ${
               activeTab === "context"
-                ? "bg-[#eaf8f0] text-slate-900 shadow-2xs"
-                : "hover:bg-slate-100 text-slate-700"
+                ? "bg-[#eaf8f0] text-slate-900 shadow-2xs border border-purple-200/60"
+                : "hover:bg-slate-100 text-slate-700 border border-transparent"
             }`}
           >
-            <div className="h-9 w-9 rounded-full bg-purple-100 border border-purple-200 text-purple-700 flex items-center justify-center text-xs font-bold shrink-0">
-              🧠
-            </div>
+            <AgentAvatar type="context" size="md" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-800 truncate">Context Optimizer</span>
+                <span className="text-xs font-bold text-slate-800 truncate">Context Optimizer</span>
                 <span className="text-[9px] px-1.5 py-0.2 rounded bg-purple-100 text-purple-800 font-bold">P3</span>
               </div>
               <p className="text-[11px] text-slate-500 truncate">context_manager.py &bull; -42.8%</p>
@@ -277,16 +303,14 @@ export default function TeamilyWorkspace({
             onClick={() => setActiveTab("tracer")}
             className={`p-2.5 rounded-2xl cursor-pointer transition-all flex items-center space-x-3 ${
               activeTab === "tracer"
-                ? "bg-[#eaf8f0] text-slate-900 shadow-2xs"
-                : "hover:bg-slate-100 text-slate-700"
+                ? "bg-[#eaf8f0] text-slate-900 shadow-2xs border border-cyan-200/60"
+                : "hover:bg-slate-100 text-slate-700 border border-transparent"
             }`}
           >
-            <div className="h-9 w-9 rounded-full bg-cyan-100 border border-cyan-200 text-cyan-700 flex items-center justify-center text-xs font-bold shrink-0">
-              📊
-            </div>
+            <AgentAvatar type="tracer" size="md" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-800 truncate">Glass-Box Tracer</span>
+                <span className="text-xs font-bold text-slate-800 truncate">Glass-Box Tracer</span>
                 <span className="text-[9px] px-1.5 py-0.2 rounded bg-cyan-100 text-cyan-800 font-bold">P4</span>
               </div>
               <p className="text-[11px] text-slate-500 truncate">tracer.py &bull; 11-Field DAG</p>
@@ -300,7 +324,7 @@ export default function TeamilyWorkspace({
 
           <div
             onClick={() => handlePresetSelect("sqli")}
-            className="p-2 rounded-xl text-xs hover:bg-slate-100 cursor-pointer flex items-center justify-between text-slate-600"
+            className="p-2 rounded-xl text-xs hover:bg-slate-100 cursor-pointer flex items-center justify-between text-slate-600 transition-colors"
           >
             <span>🔴 SQL Injection (CWE-89)</span>
             <span className="h-2 w-2 rounded-full bg-rose-500"></span>
@@ -308,7 +332,7 @@ export default function TeamilyWorkspace({
 
           <div
             onClick={() => handlePresetSelect("secrets")}
-            className="p-2 rounded-xl text-xs hover:bg-slate-100 cursor-pointer flex items-center justify-between text-slate-600"
+            className="p-2 rounded-xl text-xs hover:bg-slate-100 cursor-pointer flex items-center justify-between text-slate-600 transition-colors"
           >
             <span>🟠 AWS Secret Key Leak</span>
             <span className="h-2 w-2 rounded-full bg-amber-500"></span>
@@ -316,7 +340,7 @@ export default function TeamilyWorkspace({
 
           <div
             onClick={() => handlePresetSelect("clean")}
-            className="p-2 rounded-xl text-xs hover:bg-slate-100 cursor-pointer flex items-center justify-between text-slate-600"
+            className="p-2 rounded-xl text-xs hover:bg-slate-100 cursor-pointer flex items-center justify-between text-slate-600 transition-colors"
           >
             <span>🟢 Parameterized Query</span>
             <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
@@ -324,30 +348,28 @@ export default function TeamilyWorkspace({
         </div>
 
         {/* Footer Status */}
-        <div className="p-3 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
+        <div className="p-3 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between bg-white">
           <span className="flex items-center space-x-1.5">
             <span className="h-2 w-2 rounded-full bg-[#00c968] animate-pulse"></span>
-            <span>All Guardrails Active</span>
+            <span className="font-semibold text-emerald-700">Gemini 3.6 Active</span>
           </span>
-          <span className="font-mono text-[10px]">{traceData.metrics.estimatedCost}</span>
+          <span className="font-mono text-[10px] font-bold text-slate-700">{traceData.metrics.estimatedCost}</span>
         </div>
       </aside>
 
       {/* ========================================================================= */}
-      {/* 3. MAIN CHAT AREA (Teamily AI Feed)                                       */}
+      {/* 3. MAIN CHAT AREA (Teamily AI Feed with Gemini Commentary)                */}
       {/* ========================================================================= */}
       <main className="flex-1 bg-white flex flex-col min-w-0 overflow-hidden">
         {/* Top Header Bar */}
         <header className="h-14 border-b border-slate-100 px-6 flex items-center justify-between bg-white shrink-0 select-none">
           <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 rounded-full bg-[#00c968] text-white flex items-center justify-center text-xs font-bold">
-              🛡️
-            </div>
+            <AgentAvatar type="orchestrator" size="md" />
             <div>
               <div className="flex items-center space-x-2">
                 <h1 className="text-sm font-bold text-slate-900">VulnSentry Security Team</h1>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#eaf8f0] text-[#00c968] border border-emerald-200">
-                  Glass-Box SOC
+                  Gemini Co-Pilot
                 </span>
                 <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
                   Owner: Jeevan &bull; Akash
@@ -375,12 +397,10 @@ export default function TeamilyWorkspace({
         </header>
 
         {/* Scrollable Conversation Stream */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
-          {/* User Prompt Message (Teamily AI format: "Ivy: Schedule for tomorrow...") */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          {/* User Prompt Message */}
           <div className="flex items-start space-x-3">
-            <div className="h-8 w-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shrink-0">
-              JJ
-            </div>
+            <AgentAvatar type="user" size="md" />
             <div className="flex-1 max-w-3xl">
               <div className="flex items-center space-x-2 mb-1">
                 <span className="text-xs font-bold text-slate-900">Jeevan (Lead Auditor)</span>
@@ -409,18 +429,48 @@ export default function TeamilyWorkspace({
             </div>
           </div>
 
-          {/* Agent Response: The Structured Teamily AI Card */}
+          {/* ========================================================================= */}
+          {/* GEMINI 3.6 FLASH LIVE AGENT INTERACTION BUBBLE                            */}
+          {/* ========================================================================= */}
           <div className="flex items-start space-x-3">
-            <div className="h-8 w-8 rounded-full bg-[#00c968] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-sm shadow-emerald-200">
-              🛡️
-            </div>
-            <div className="flex-1 max-w-3xl space-y-4">
+            <AgentAvatar type="orchestrator" size="md" />
+            <div className="flex-1 max-w-3xl space-y-1.5">
               <div className="flex items-center space-x-2">
-                <span className="text-xs font-bold text-slate-900">VulnSentry Security Team</span>
-                <span className="text-[10px] text-slate-400">Automated Pipeline</span>
+                <span className="text-xs font-bold text-slate-900">VulnSentry Lead Agent</span>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border border-emerald-300 font-mono flex items-center gap-1">
+                  <span>✨</span>
+                  <span>Gemini 3.6 Flash</span>
+                </span>
+                <span className="text-[10px] text-slate-400">Interactive SOC Co-Pilot</span>
               </div>
 
-              {/* The Structured Card (Exact Teamily AI layout from screenshot) */}
+              <div className="bg-gradient-to-br from-[#f0faf5] via-white to-[#e8f6ef] border border-emerald-200/90 rounded-2xl rounded-tl-sm p-4 text-xs text-slate-800 shadow-xs space-y-2">
+                {isGeminiLoading ? (
+                  <div className="flex items-center space-x-2 text-emerald-700 font-mono text-xs py-1">
+                    <div className="h-3.5 w-3.5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span>Gemini is evaluating your code & guardrail responses in real-time...</span>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-700 leading-relaxed font-sans font-medium whitespace-pre-wrap">
+                    {geminiMessage}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ========================================================================= */}
+          {/* STRUCTURED TEAMILY AI AUDIT CARD (All 4 Pieces Verified)                  */}
+          {/* ========================================================================= */}
+          <div className="flex items-start space-x-3">
+            <AgentAvatar type="shield" size="md" />
+            <div className="flex-1 max-w-3xl space-y-4">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-bold text-slate-900">Deterministic Guardrail Stream</span>
+                <span className="text-[10px] text-slate-400">Verifiable DAG</span>
+              </div>
+
+              {/* The Structured Card */}
               <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs space-y-4 text-xs">
                 {/* Header Checkmark */}
                 <div className="flex items-center space-x-2 pb-3 border-b border-slate-100">
@@ -525,7 +575,7 @@ export default function TeamilyWorkspace({
                     </div>
                   ) : (
                     <p className="text-[11px] text-slate-600">
-                      Tool call arguments strictly verified against registered JSON schema.
+                      ✅ Tool call arguments strictly verified against registered JSON schema.
                     </p>
                   )}
 
@@ -672,20 +722,19 @@ export default function TeamilyWorkspace({
               <textarea
                 value={inputCode}
                 onChange={(e) => setInputCode(e.target.value)}
-                placeholder="I need more information about... or paste code to audit"
+                placeholder="Ask Jeevan a question or paste Python code to audit..."
                 rows={2}
                 className="flex-1 bg-transparent border-none outline-none text-xs text-slate-800 placeholder-slate-400 resize-none font-sans leading-relaxed"
               />
 
               {/* Action Icons & Circular Send Button */}
               <div className="flex items-center space-x-2 ml-2 shrink-0">
-                {/* Send Button (Green circle with paper plane like in screenshot) */}
                 <button
                   type="submit"
-                  disabled={isRunning || !inputCode.trim()}
+                  disabled={isRunning || isGeminiLoading || !inputCode.trim()}
                   className="h-9 w-9 rounded-full bg-[#00c968] hover:bg-[#00b05b] disabled:opacity-50 text-white flex items-center justify-center shadow-sm shadow-emerald-200 transition-transform active:scale-95"
                 >
-                  {isRunning ? (
+                  {isRunning || isGeminiLoading ? (
                     <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
