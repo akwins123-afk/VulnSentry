@@ -459,7 +459,7 @@ export default function DatadogObservabilityView({
           <div className="bg-[#1f0d36] rounded-xl p-4 text-purple-100 font-mono text-xs space-y-3">
             <div className="flex items-center justify-between border-b border-purple-800 pb-2">
               <span className="font-bold text-white flex items-center gap-2">
-                <span>🐕</span>
+                <AgentAvatar type="datadog" size="sm" showStatus={false} />
                 <span>Datadog Span Inspector: {selectedSpan.name}</span>
               </span>
               <span className="text-[10px] text-purple-300">

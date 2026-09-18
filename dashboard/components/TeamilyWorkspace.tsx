@@ -343,15 +343,15 @@ export default function TeamilyWorkspace({
             <button
               onClick={() => setActiveTab("datadog")}
               title="Datadog APM & LLM Observability"
-              className={`p-2.5 rounded-xl transition-colors relative ${
+              className={`p-2 rounded-xl transition-all relative ${
                 activeTab === "datadog"
-                  ? "bg-purple-100 text-[#632ca6]"
-                  : "hover:bg-purple-50 hover:text-purple-600 text-purple-400"
+                  ? "bg-slate-100 text-slate-900 border border-slate-300 shadow-2xs"
+                  : "hover:bg-slate-100 text-slate-600"
               }`}
             >
-              <span className="text-base">🐕</span>
+              <AgentAvatar type="datadog" size="sm" showStatus={false} />
               {activeTab === "datadog" && (
-                <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#a855f7] animate-pulse"></span>
+                <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-slate-900"></span>
               )}
             </button>
 
@@ -629,10 +629,10 @@ export default function TeamilyWorkspace({
 
               <button
                 onClick={() => setActiveTab("datadog")}
-                className="text-xs px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 transition-colors font-medium flex items-center space-x-1"
+                className="text-xs px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 transition-colors font-medium flex items-center space-x-1.5"
               >
-                <span className="text-sm">🐕</span>
-                <span>Datadog</span>
+                <AgentAvatar type="datadog" size="sm" showStatus={false} />
+                <span>Datadog APM</span>
               </button>
             </div>
           </header>
@@ -739,8 +739,8 @@ export default function TeamilyWorkspace({
 
                   {/* Section 1: Event Details */}
                   <div className="space-y-1">
-                    <div className="font-bold text-slate-800 flex items-center space-x-1.5">
-                      <span>📋</span>
+                    <div className="font-bold text-slate-800 flex items-center space-x-2">
+                      <AgentAvatar type="architect" size="sm" showStatus={false} />
                       <span>Event Details:</span>
                     </div>
                     <ul className="space-y-1 text-slate-600 pl-5 list-disc text-[11px] leading-relaxed">
@@ -780,8 +780,8 @@ export default function TeamilyWorkspace({
                   {/* Section 2: Piece 1 (The Shield) & Piece 2 (Self-Correction) */}
                   <div className="bg-[#fafcfb] border border-slate-200/80 rounded-xl p-3.5 space-y-2">
                     <div className="font-bold text-slate-800 flex items-center justify-between">
-                      <span className="flex items-center space-x-1.5">
-                        <span>🛡️</span>
+                      <span className="flex items-center space-x-2">
+                        <AgentAvatar type="shield" size="sm" showStatus={false} />
                         <span>Piece 1: The Shield (tool_validator.py)</span>
                       </span>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
@@ -814,8 +814,8 @@ export default function TeamilyWorkspace({
                     {/* Piece 2 Recovery */}
                     {failureEvent && (
                       <div className="pt-2 border-t border-slate-200/60 text-[11px] text-slate-600 space-y-1">
-                        <div className="font-bold text-slate-800 flex items-center space-x-1.5">
-                          <span>🔄</span>
+                        <div className="font-bold text-slate-800 flex items-center space-x-2">
+                          <AgentAvatar type="healer" size="sm" showStatus={false} />
                           <span>Piece 2: Self-Correction (failure_interceptor.py)</span>
                         </div>
                         <p>
@@ -828,8 +828,8 @@ export default function TeamilyWorkspace({
                   {/* Section 3: Piece 3 (Context Manager) */}
                   <div className="bg-[#fafcfb] border border-slate-200/80 rounded-xl p-3.5 space-y-2">
                     <div className="font-bold text-slate-800 flex items-center justify-between">
-                      <span className="flex items-center space-x-1.5">
-                        <span>🧠</span>
+                      <span className="flex items-center space-x-2">
+                        <AgentAvatar type="context" size="sm" showStatus={false} />
                         <span>Piece 3: Context Manager (context_manager.py)</span>
                       </span>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">
@@ -854,8 +854,8 @@ export default function TeamilyWorkspace({
 
                   {/* Section 4: Piece 4 (Execution Tracer) */}
                   <div className="space-y-1.5">
-                    <div className="font-bold text-slate-800 flex items-center space-x-1.5">
-                      <span>📊</span>
+                    <div className="font-bold text-slate-800 flex items-center space-x-2">
+                      <AgentAvatar type="tracer" size="sm" showStatus={false} />
                       <span>Piece 4: Glass-Box DAG Telemetry (tracer.py)</span>
                     </div>
                     <ul className="space-y-1 text-slate-600 pl-5 list-disc text-[11px] font-mono leading-relaxed">
@@ -868,10 +868,13 @@ export default function TeamilyWorkspace({
 
                   {/* Section 5: Remediation Code Card or Clean Verification */}
                   {traceData.finding.vulnerability_detected ? (
-                    <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3.5 space-y-1.5">
-                      <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block">
-                        🛡️ Recommended Automated Remediation:
-                      </span>
+                    <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3.5 space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <AgentAvatar type="healer" size="sm" showStatus={false} />
+                        <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">
+                          Recommended Automated Remediation:
+                        </span>
+                      </div>
                       <p className="text-[11px] text-slate-600">
                         {traceData.finding.remediation}
                       </p>

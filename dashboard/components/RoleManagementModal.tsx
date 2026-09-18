@@ -214,7 +214,7 @@ export default function RoleManagementModal({
                 : "text-slate-500 hover:text-slate-800"
             }`}
           >
-            <span>🎭</span>
+            <AgentAvatar type="pentester" size="sm" showStatus={false} />
             <span>1. Role-Based Prompting (Personas)</span>
           </button>
           <button
@@ -225,7 +225,7 @@ export default function RoleManagementModal({
                 : "text-slate-500 hover:text-slate-800"
             }`}
           >
-            <span>🔐</span>
+            <AgentAvatar type="rbac" size="sm" showStatus={false} />
             <span>2. Workspace Access Control (RBAC)</span>
           </button>
         </div>

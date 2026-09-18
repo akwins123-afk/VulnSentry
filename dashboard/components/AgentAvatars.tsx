@@ -45,111 +45,42 @@ export default function AgentAvatar({
     xl: "w-3.5 h-3.5 bottom-0 right-0",
   };
 
-  // Color styles adhering to clean security line-art aesthetic from reference sheet
-  const colorStyles: Record<AgentAvatarType, { bg: string; border: string; icon: string; dot: string }> = {
-    orchestrator: {
-      bg: "bg-emerald-50/90 hover:bg-emerald-100/80",
-      border: "border-emerald-300 shadow-sm shadow-emerald-500/10",
-      icon: "text-emerald-700",
-      dot: "bg-[#00c968]",
-    },
-    shield: {
-      bg: "bg-amber-50/90 hover:bg-amber-100/80",
-      border: "border-amber-300 shadow-sm shadow-amber-500/10",
-      icon: "text-amber-700",
-      dot: "bg-amber-500",
-    },
-    healer: {
-      bg: "bg-teal-50/90 hover:bg-teal-100/80",
-      border: "border-teal-300 shadow-sm shadow-teal-500/10",
-      icon: "text-teal-700",
-      dot: "bg-teal-500",
-    },
-    context: {
-      bg: "bg-purple-50/90 hover:bg-purple-100/80",
-      border: "border-purple-300 shadow-sm shadow-purple-500/10",
-      icon: "text-purple-700",
-      dot: "bg-purple-500",
-    },
-    tracer: {
-      bg: "bg-cyan-50/90 hover:bg-cyan-100/80",
-      border: "border-cyan-300 shadow-sm shadow-cyan-500/10",
-      icon: "text-cyan-700",
-      dot: "bg-cyan-500",
-    },
-    datadog: {
-      bg: "bg-[#f5eefc] hover:bg-[#ebdcf9]",
-      border: "border-purple-300 shadow-sm shadow-purple-900/10",
-      icon: "text-[#632ca6]",
-      dot: "bg-[#7733cc]",
-    },
-    pentester: {
-      bg: "bg-rose-50/90 hover:bg-rose-100/80",
-      border: "border-rose-300 shadow-sm shadow-rose-500/10",
-      icon: "text-rose-700",
-      dot: "bg-rose-500",
-    },
-    architect: {
-      bg: "bg-sky-50/90 hover:bg-sky-100/80",
-      border: "border-sky-300 shadow-sm shadow-sky-500/10",
-      icon: "text-sky-700",
-      dot: "bg-sky-500",
-    },
-    compliance: {
-      bg: "bg-emerald-50/90 hover:bg-emerald-100/80",
-      border: "border-emerald-300 shadow-sm shadow-emerald-500/10",
-      icon: "text-emerald-800",
-      dot: "bg-emerald-600",
-    },
-    rbac: {
-      bg: "bg-indigo-50/90 hover:bg-indigo-100/80",
-      border: "border-indigo-300 shadow-sm shadow-indigo-500/10",
-      icon: "text-indigo-700",
-      dot: "bg-indigo-600",
-    },
-    user: {
-      bg: "bg-slate-100 hover:bg-slate-200/70",
-      border: "border-slate-300 shadow-sm",
-      icon: "text-slate-700",
-      dot: "bg-[#00c968]",
-    },
-    custom: {
-      bg: "bg-pink-50/90 hover:bg-pink-100/80",
-      border: "border-pink-300 shadow-sm",
-      icon: "text-pink-700",
-      dot: "bg-pink-500",
-    },
+  // STRICTLY BLACK AND WHITE / MONOCHROME AESTHETIC
+  // Crisp black line art on pristine white card with subtle precision border
+  const style = {
+    bg: "bg-white hover:bg-slate-50",
+    border: "border-slate-300 hover:border-slate-400 shadow-2xs",
+    icon: "text-slate-900", // Pure black stroke
+    dot: "bg-slate-900",    // Solid black status indicator
   };
 
-  const style = colorStyles[type] || colorStyles.custom;
-
-  // Render authentic vector line art corresponding to the reference sheet
+  // Render authentic vector line art corresponding to the reference sheet in pure black & white
   const renderIcon = () => {
     switch (type) {
       case "orchestrator":
         // Reference Icon 2: Padlock with circular dashed orbit and connection nodes
         return (
-          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             {/* Outer dotted orbit */}
             <circle cx="12" cy="12" r="9.5" strokeDasharray="2 2" />
             {/* Orbit nodes */}
-            <circle cx="12" cy="2.5" r="1" fill="currentColor" />
-            <circle cx="21.5" cy="12" r="1" fill="currentColor" />
-            <circle cx="12" cy="21.5" r="1" fill="currentColor" />
-            <circle cx="2.5" cy="12" r="1" fill="currentColor" />
+            <circle cx="12" cy="2.5" r="1.1" fill="currentColor" />
+            <circle cx="21.5" cy="12" r="1.1" fill="currentColor" />
+            <circle cx="12" cy="21.5" r="1.1" fill="currentColor" />
+            <circle cx="2.5" cy="12" r="1.1" fill="currentColor" />
             {/* Inner solid orbit */}
             <circle cx="12" cy="12" r="6.5" />
             {/* Central Padlock */}
             <path d="M10 10V8a2 2 0 014 0v2" />
             <rect x="9" y="10" width="6" height="5" rx="1" />
-            <circle cx="12" cy="12.5" r="0.6" fill="currentColor" />
+            <circle cx="12" cy="12.5" r="0.7" fill="currentColor" />
           </svg>
         );
 
       case "shield":
         // Reference Icon 3: Shield with hatched diagonal pattern and caution triangle
         return (
-          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2L4 5.5v6c0 5 3.5 9.5 8 10.5 4.5-1 8-5.5 8-10.5v-6L12 2z" />
             {/* Left diagonal hatch lines */}
             <line x1="6.5" y1="8" x2="9" y2="10.5" />
@@ -158,14 +89,14 @@ export default function AgentAvatar({
             {/* Right caution triangle */}
             <polygon points="14.5,8 19,16 10,16" />
             <line x1="14.5" y1="10.5" x2="14.5" y2="13" />
-            <circle cx="14.5" cy="14.5" r="0.5" fill="currentColor" />
+            <circle cx="14.5" cy="14.5" r="0.6" fill="currentColor" />
           </svg>
         );
 
       case "healer":
         // Reference Icon 6: Shield with two interlocking mechanical gears inside
         return (
-          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2L4 5.5v6c0 5 3.5 9.5 8 10.5 4.5-1 8-5.5 8-10.5v-6L12 2z" />
             {/* Gear 1 */}
             <circle cx="10" cy="11.5" r="2.5" />
@@ -179,7 +110,7 @@ export default function AgentAvatar({
       case "context":
         // Reference Icon 8: Document being shredded behind a security shield
         return (
-          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             {/* Document sheet */}
             <path d="M4 3h7l4 4v5H4V3z" />
             {/* Shredder strips coming down */}
@@ -196,7 +127,7 @@ export default function AgentAvatar({
       case "tracer":
         // Reference Icon 12: Shield with square microchip CPU & bus pinouts
         return (
-          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2L4 5.5v6c0 5 3.5 9.5 8 10.5 4.5-1 8-5.5 8-10.5v-6L12 2z" />
             {/* Center Microchip CPU */}
             <rect x="9" y="8.5" width="6" height="6" rx="0.5" />
@@ -214,27 +145,27 @@ export default function AgentAvatar({
         );
 
       case "datadog":
-        // Reference Icon 15: Globe with ethernet connector & shield
+        // Reference Icon 15: Globe with ethernet connector & shield in pure black & white
         return (
-          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             {/* Globe */}
             <circle cx="11.5" cy="11.5" r="8.5" />
             <ellipse cx="11.5" cy="11.5" rx="4" ry="8.5" />
             <line x1="3" y1="11.5" x2="20" y2="11.5" />
             {/* Ethernet cable box in center */}
-            <rect x="8.5" y="9.5" width="6" height="4" rx="0.5" fill="#f5eefc" />
+            <rect x="8.5" y="9.5" width="6" height="4" rx="0.5" fill="white" stroke="currentColor" />
             <line x1="10" y1="11.5" x2="10" y2="13.5" />
             <line x1="11.5" y1="11.5" x2="11.5" y2="13.5" />
             <line x1="13" y1="11.5" x2="13" y2="13.5" />
             {/* Lower-right shield */}
-            <path d="M19 14l-2.5 1v2c0 1.8 1.2 3.5 2.5 4 1.3-.5 2.5-2.2 2.5-4v-2L19 14z" fill="#f5eefc" />
+            <path d="M19 14l-2.5 1v2c0 1.8 1.2 3.5 2.5 4 1.3-.5 2.5-2.2 2.5-4v-2L19 14z" fill="white" stroke="currentColor" />
           </svg>
         );
 
       case "pentester":
         // Reference Icon 7: Shield with circuit sensor nodes
         return (
-          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 4l-5 2.5v4c0 3.5 2.5 7 5 8 2.5-1 5-4.5 5-8v-4L12 4z" />
             {/* Horizontal hatch */}
             <line x1="9" y1="8.5" x2="15" y2="8.5" />
@@ -242,20 +173,20 @@ export default function AgentAvatar({
             <line x1="9.5" y1="13.5" x2="14.5" y2="13.5" />
             {/* Circuit arms with terminal nodes */}
             <line x1="7" y1="8" x2="4.5" y2="6.5" />
-            <circle cx="3.5" cy="6" r="1" fill="currentColor" />
+            <circle cx="3.5" cy="6" r="1.1" fill="currentColor" />
             <line x1="7" y1="13" x2="4" y2="14.5" />
-            <circle cx="3" cy="15" r="1" fill="currentColor" />
+            <circle cx="3" cy="15" r="1.1" fill="currentColor" />
             <line x1="17" y1="8" x2="19.5" y2="6.5" />
-            <circle cx="20.5" cy="6" r="1" fill="currentColor" />
+            <circle cx="20.5" cy="6" r="1.1" fill="currentColor" />
             <line x1="17" y1="13" x2="20" y2="14.5" />
-            <circle cx="21" cy="15" r="1" fill="currentColor" />
+            <circle cx="21" cy="15" r="1.1" fill="currentColor" />
           </svg>
         );
 
       case "architect":
         // Reference Icon 4: Microchip key with binary stream on left
         return (
-          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             {/* Binary stream lines on left */}
             <line x1="2" y1="6" x2="6" y2="6" />
             <line x1="2" y1="8.5" x2="5" y2="8.5" />
@@ -279,7 +210,7 @@ export default function AgentAvatar({
       case "compliance":
         // Reference Icon 14: Quartered crosshatch shield
         return (
-          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2L4 5.5v6c0 5 3.5 9.5 8 10.5 4.5-1 8-5.5 8-10.5v-6L12 2z" />
             <line x1="12" y1="2" x2="12" y2="22" />
             <line x1="4" y1="11.5" x2="20" y2="11.5" />
@@ -294,7 +225,7 @@ export default function AgentAvatar({
       case "rbac":
         // Reference Icon 10: Padlock with password dashes **** _
         return (
-          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M8 9V6a4 4 0 018 0v3" />
             <rect x="4.5" y="9" width="15" height="10" rx="2" />
             {/* Asterisks for password dots */}
@@ -312,11 +243,11 @@ export default function AgentAvatar({
       case "user":
         // Reference Icon 5: Speech balloon with padlock
         return (
-          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 11.5a8.5 8.5 0 01-8.5 8.5c-1.5 0-2.9-.4-4.2-1L3 20.5l1.5-4.3A8.5 8.5 0 1121 11.5z" />
             <path d="M10.5 10.5V9a1.5 1.5 0 013 0v1.5" />
             <rect x="9.5" y="10.5" width="5" height="4" rx="0.8" />
-            <circle cx="12" cy="12.5" r="0.5" fill="currentColor" />
+            <circle cx="12" cy="12.5" r="0.6" fill="currentColor" />
           </svg>
         );
 
@@ -324,7 +255,7 @@ export default function AgentAvatar({
       default:
         const initials = (label || "AI").slice(0, 2).toUpperCase();
         return (
-          <div className="w-full h-full flex items-center justify-center font-bold font-mono text-xs text-pink-700">
+          <div className="w-full h-full flex items-center justify-center font-bold font-mono text-xs text-slate-900">
             {initials}
           </div>
         );
@@ -332,10 +263,14 @@ export default function AgentAvatar({
   };
 
   return (
-    <div className={`relative shrink-0 ${sizeClasses[size]} ${style.bg} ${style.border} ${style.icon} border rounded-2xl flex items-center justify-center transition-all ${className}`}>
+    <div
+      className={`relative shrink-0 ${sizeClasses[size]} ${style.bg} ${style.border} ${style.icon} border rounded-2xl flex items-center justify-center transition-all ${className}`}
+    >
       {renderIcon()}
       {showStatus && (
-        <span className={`absolute ${statusDotSizes[size]} rounded-full ${style.dot} ring-2 ring-white animate-pulse`}></span>
+        <span
+          className={`absolute ${statusDotSizes[size]} rounded-full ${style.dot} ring-2 ring-white`}
+        ></span>
       )}
     </div>
   );
