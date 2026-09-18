@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import Navbar from "@/components/Navbar";
+import AgentChatWorkspace from "@/components/AgentChatWorkspace";
 import SecurityFindingsPanel from "@/components/SecurityFindingsPanel";
 import GlassBoxWorkflow from "@/components/GlassBoxWorkflow";
 import FailureDemoCard from "@/components/FailureDemoCard";
@@ -27,6 +28,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRunningAudit, setIsRunningAudit] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"agents" | "soc">("agents");
 
   // Load audit trace from API
   const fetchTrace = async () => {
@@ -76,8 +78,40 @@ export default function DashboardPage() {
       }
     } catch (err: any) {
       console.error("Run audit error:", err);
-      // Fallback reload
       fetchTrace();
+    } finally {
+      setIsRunningAudit(false);
+    }
+  };
+
+  // Run custom prompt/code audit in real-time
+  const handleRunCustomAudit = async (code: string, triggerFailure: boolean) => {
+    setIsRunningAudit(true);
+    try {
+      const res = await fetch("/api/run-audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code,
+          trigger_demo_failure: triggerFailure,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`Interactive audit failed (${res.status})`);
+      }
+      const raw = await res.json();
+      const normalized = normalizeTrace(raw);
+      setTraceData(normalized);
+
+      if (normalized.events.length > 0) {
+        const failureEv = normalized.events.find(
+          (e) => e.status === "FAILURE" || e.event_type === "FAILURE_DETECTED"
+        );
+        setSelectedEvent(failureEv || normalized.events[0]);
+      }
+    } catch (err: any) {
+      console.error("Custom audit error:", err);
+      alert("Failed to run custom audit: " + (err?.message || "Unknown error"));
     } finally {
       setIsRunningAudit(false);
     }
@@ -143,9 +177,9 @@ export default function DashboardPage() {
   if (isLoading && !traceData) {
     return (
       <div className="min-h-screen bg-[#070b14] flex flex-col items-center justify-center text-slate-300 font-mono">
-        <div className="h-10 w-10 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <div className="text-sm font-bold text-white">Loading VulnSentry Telemetry...</div>
-        <p className="text-xs text-slate-500 mt-1">Reading audit_trace.json and normalizing execution DAG</p>
+        <div className="h-10 w-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <div className="text-sm font-bold text-white">Loading VulnSentry AI Agents...</div>
+        <p className="text-xs text-slate-500 mt-1">Reading audit_trace.json and setting up guardrails</p>
       </div>
     );
   }
@@ -154,7 +188,7 @@ export default function DashboardPage() {
   if (error && !traceData) {
     return (
       <div className="min-h-screen bg-[#070b14] flex flex-col items-center justify-center text-slate-300 p-6 font-mono">
-        <div className="bg-[#120e18] border border-rose-800 rounded-lg p-6 max-w-lg text-center shadow-2xl">
+        <div className="bg-[#120e18] border border-rose-800 rounded-2xl p-6 max-w-lg text-center shadow-2xl">
           <div className="text-rose-400 text-2xl mb-2">⚠</div>
           <h2 className="text-sm font-bold text-rose-300 uppercase tracking-wider mb-2">
             Failed to Load Execution Trace
@@ -163,13 +197,13 @@ export default function DashboardPage() {
           <div className="flex justify-center gap-3">
             <button
               onClick={fetchTrace}
-              className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-semibold"
+              className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold"
             >
               Retry
             </button>
             <button
               onClick={handleRunAudit}
-              className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-semibold border border-slate-700"
+              className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700"
             >
               Execute python3 run_audit.py
             </button>
@@ -182,8 +216,8 @@ export default function DashboardPage() {
   if (!traceData || !activeMetrics || !activeFinding || !activeFailure) return null;
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col selection:bg-indigo-900 selection:text-indigo-200">
-      {/* 1. Top SOC Navbar */}
+    <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col selection:bg-emerald-900 selection:text-emerald-200">
+      {/* 1. Top Navbar */}
       <Navbar
         runId={traceData.run_id}
         status={traceData.status}
@@ -192,69 +226,112 @@ export default function DashboardPage() {
         selectedRunLabel={activeRunGroup?.label || "Full Trace"}
       />
 
-      {/* 2. Main 3-Column Glass-Box Workspace */}
-      <main className="flex-1 p-4 sm:p-5 max-w-[1780px] mx-auto w-full space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-          {/* ============================================================== */}
-          {/* LEFT COLUMN: Security Findings, Glass-Box Workflow, Failure Demo */}
-          {/* ============================================================== */}
-          <div className="lg:col-span-3 space-y-4">
-            {/* Security Findings Panel (CWE-89) */}
-            <SecurityFindingsPanel finding={activeFinding} />
+      {/* Mode Switcher Bar */}
+      <div className="bg-[#080d17] border-b border-slate-800/80 px-4 py-2">
+        <div className="max-w-[1780px] mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setViewMode("agents")}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                viewMode === "agents"
+                  ? "bg-emerald-600 text-white shadow-md"
+                  : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
+              }`}
+            >
+              <span>💬</span>
+              <span>AI Agents Workspace (Teamily AI View)</span>
+            </button>
 
-            {/* Why Did This Run Happen? Glass Box workflow */}
-            <GlassBoxWorkflow />
-
-            {/* Failure Demonstration (Blocked force_gas & recovery) */}
-            <FailureDemoCard failure={activeFailure} />
-
-            {/* Context Engineering */}
-            <ContextEngineeringCard context={traceData.context} />
+            <button
+              onClick={() => setViewMode("soc")}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                viewMode === "soc"
+                  ? "bg-indigo-600 text-white shadow-md"
+                  : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
+              }`}
+            >
+              <span>🛡️</span>
+              <span>SOC Glass-Box Telemetry (Dense View)</span>
+            </button>
           </div>
 
-          {/* ============================================================== */}
-          {/* CENTER COLUMN: Execution Trace Timeline & Event Inspection     */}
-          {/* ============================================================== */}
-          <div className="lg:col-span-6 space-y-4">
-            {/* Execution Trace Timeline (Clickable events, filters, search) */}
-            <div className="min-h-[460px]">
-              <ExecutionTrace
-                events={activeEvents}
-                selectedEventId={selectedEvent?.event_id || null}
-                onSelectEvent={(ev) => setSelectedEvent(ev)}
-              />
-            </div>
-
-            {/* Event Detail Drawer / Telemetry Panel */}
-            <div className="min-h-[380px]">
-              <EventDetailDrawer
-                event={selectedEvent}
-                onClose={() => setSelectedEvent(null)}
-              />
-            </div>
-
-            {/* Target Code Snippet Being Audited */}
-            <CodeInputPanel code={auditedCodeSnippet} />
-          </div>
-
-          {/* ============================================================== */}
-          {/* RIGHT COLUMN: SOC Telemetry Metrics & Run History Switcher      */}
-          {/* ============================================================== */}
-          <div className="lg:col-span-3 space-y-4">
-            {/* 9 SOC Run Metrics */}
-            <RunMetrics metrics={activeMetrics} />
-
-            {/* Run History & Multi-Scan Switcher */}
-            <RunHistory
-              runGroups={traceData.runGroups}
-              selectedGroupId={selectedGroupId}
-              onSelectGroup={handleSelectGroup}
-            />
+          <div className="hidden sm:flex items-center space-x-3 text-xs font-mono text-slate-400">
+            <span className="flex items-center space-x-1">
+              <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
+              <span>The Shield: Active</span>
+            </span>
+            <span className="text-slate-600">&bull;</span>
+            <span>Self-Heal: Ready</span>
+            <span className="text-slate-600">&bull;</span>
+            <span className="text-purple-400">42.8% Token Savings</span>
           </div>
         </div>
+      </div>
+
+      {/* Main Container */}
+      <main className="flex-1 p-4 max-w-[1780px] mx-auto w-full">
+        {/* ============================================================== */}
+        {/* VIEW 1: Teamily AI Conversational Agent Workspace              */}
+        {/* ============================================================== */}
+        {viewMode === "agents" && (
+          <AgentChatWorkspace
+            traceData={traceData}
+            onRunCustomAudit={handleRunCustomAudit}
+            isRunning={isRunningAudit}
+            onInspectEvent={(ev) => {
+              setSelectedEvent(ev);
+              setViewMode("soc");
+            }}
+          />
+        )}
+
+        {/* ============================================================== */}
+        {/* VIEW 2: Dense SOC Glass-Box Telemetry Dashboard                */}
+        {/* ============================================================== */}
+        {viewMode === "soc" && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+            {/* LEFT COLUMN: Security Findings, Glass-Box Workflow, Failure Demo */}
+            <div className="lg:col-span-3 space-y-4">
+              <SecurityFindingsPanel finding={activeFinding} />
+              <GlassBoxWorkflow />
+              <FailureDemoCard failure={activeFailure} />
+              <ContextEngineeringCard context={traceData.context} />
+            </div>
+
+            {/* CENTER COLUMN: Execution Trace Timeline & Event Detail */}
+            <div className="lg:col-span-6 space-y-4">
+              <div className="min-h-[460px]">
+                <ExecutionTrace
+                  events={activeEvents}
+                  selectedEventId={selectedEvent?.event_id || null}
+                  onSelectEvent={(ev) => setSelectedEvent(ev)}
+                />
+              </div>
+
+              <div className="min-h-[380px]">
+                <EventDetailDrawer
+                  event={selectedEvent}
+                  onClose={() => setSelectedEvent(null)}
+                />
+              </div>
+
+              <CodeInputPanel code={auditedCodeSnippet} />
+            </div>
+
+            {/* RIGHT COLUMN: SOC Telemetry Metrics & Run History */}
+            <div className="lg:col-span-3 space-y-4">
+              <RunMetrics metrics={activeMetrics} />
+              <RunHistory
+                runGroups={traceData.runGroups}
+                selectedGroupId={selectedGroupId}
+                onSelectGroup={handleSelectGroup}
+              />
+            </div>
+          </div>
+        )}
       </main>
 
-      {/* 3. Footer */}
+      {/* Footer */}
       <footer className="border-t border-slate-900/80 py-3 px-4 text-center text-[11px] text-slate-500 font-mono flex flex-col sm:flex-row items-center justify-between max-w-[1780px] mx-auto w-full">
         <div>
           VulnSentry &bull; Glass-Box Autonomous Security & Exploit Auditor
