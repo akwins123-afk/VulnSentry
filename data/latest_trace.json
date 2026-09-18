@@ -1,0 +1,679 @@
+{
+  "run": {
+    "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+    "status": "COMPLETED",
+    "start_time": "2026-09-18T05:28:37.712381+00:00",
+    "end_time": "2026-09-18T05:28:37.713561+00:00",
+    "metadata": {
+      "scanner": "VulnSentry",
+      "version": "1.0.0",
+      "environment": "production-audit",
+      "target": "vulnerable_app.py"
+    },
+    "events": [
+      {
+        "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+        "event_id": "b36007b7-f46c-465e-999e-52d3e249e768",
+        "parent_event_id": null,
+        "timestamp": "2026-09-18T05:28:37.712588+00:00",
+        "event_type": "USER_QUERY",
+        "input": {
+          "query": "Audit repository test_fixtures/vulnerable_app.py for injection flaws and credential leaks.",
+          "target_file": "vulnerable_app.py",
+          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()"
+        },
+        "output": {
+          "status": "ACCEPTED",
+          "target": "vulnerable_app.py",
+          "lines_of_code": 11
+        },
+        "status": "SUCCESS",
+        "duration_ms": 4.2,
+        "metadata": {
+          "source": "cli_dashboard",
+          "audit_mode": "deep_inspection"
+        },
+        "error": null
+      },
+      {
+        "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+        "event_id": "7fa5bbd1-6e63-4f15-ac23-f157359e82b7",
+        "parent_event_id": "b36007b7-f46c-465e-999e-52d3e249e768",
+        "timestamp": "2026-09-18T05:28:37.712713+00:00",
+        "event_type": "CONTEXT_SELECTED",
+        "input": {
+          "total_turns": 12,
+          "original_token_count": 274
+        },
+        "output": {
+          "selected_turns": 6,
+          "compressed_token_count": 206,
+          "reduction_percentage": 24.82,
+          "selection_strategy": "security_aware_recency"
+        },
+        "status": "SUCCESS",
+        "duration_ms": null,
+        "metadata": {
+          "original_token_count": 274,
+          "compressed_token_count": 206,
+          "reduction_percentage": 24.82,
+          "selection_strategy": "security_aware_recency",
+          "preserved_items": [
+            "system_prompt",
+            "current_user_request",
+            "recent_turns_window:4",
+            "compressed_historical_turns:7"
+          ]
+        },
+        "error": null
+      },
+      {
+        "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+        "event_id": "dba5765d-35a2-4e04-bf8c-9d49d2c08861",
+        "parent_event_id": "7fa5bbd1-6e63-4f15-ac23-f157359e82b7",
+        "timestamp": "2026-09-18T05:28:37.712729+00:00",
+        "event_type": "LLM_CALL",
+        "input": {
+          "prompt": "Analyze code snippet and determine security verification strategy.",
+          "model": "gpt-4o-mini",
+          "temperature": 0.0,
+          "messages_count": 6
+        },
+        "output": {
+          "thought": "Code contains string interpolation in SQL query execution. Also contains hardcoded AKIA AWS key. Proposing exploit simulation and static verification.",
+          "tool_decision": "exploit_simulator"
+        },
+        "status": "SUCCESS",
+        "duration_ms": 412.5,
+        "metadata": {
+          "tokens": {
+            "prompt_tokens": 340,
+            "completion_tokens": 48
+          }
+        },
+        "error": null
+      },
+      {
+        "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+        "event_id": "599a2468-ebaa-4b87-952c-6b5c2c73743b",
+        "parent_event_id": "dba5765d-35a2-4e04-bf8c-9d49d2c08861",
+        "timestamp": "2026-09-18T05:28:37.712741+00:00",
+        "event_type": "TOOL_SELECTION",
+        "input": {
+          "tool": "exploit_simulator",
+          "arguments": {
+            "target": "vulnerable_app.py",
+            "force_gas": 999999
+          }
+        },
+        "output": {
+          "selected_tool": "exploit_simulator",
+          "requires_validation": true
+        },
+        "status": "SUCCESS",
+        "duration_ms": 1.8,
+        "metadata": {},
+        "error": null
+      },
+      {
+        "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+        "event_id": "c4076620-d986-4826-a52f-bb76173ee7a9",
+        "parent_event_id": "599a2468-ebaa-4b87-952c-6b5c2c73743b",
+        "timestamp": "2026-09-18T05:28:37.712777+00:00",
+        "event_type": "TOOL_VALIDATION",
+        "input": {
+          "tool": "exploit_simulator",
+          "arguments": {
+            "target": "vulnerable_app.py",
+            "force_gas": 999999
+          }
+        },
+        "output": {
+          "is_valid": false,
+          "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'exploit_simulator'. Allowed parameters: ['gas_limit', 'target']. Missing required parameter 'gas_limit' for tool 'exploit_simulator'."
+        },
+        "status": "FAILURE",
+        "duration_ms": null,
+        "metadata": {
+          "error_type": "UNKNOWN_PARAMETER"
+        },
+        "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'exploit_simulator'. Allowed parameters: ['gas_limit', 'target']. Missing required parameter 'gas_limit' for tool 'exploit_simulator'."
+      },
+      {
+        "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+        "event_id": "6a53fe1d-f526-44d1-b041-23c08c9a2ab7",
+        "parent_event_id": "c4076620-d986-4826-a52f-bb76173ee7a9",
+        "timestamp": "2026-09-18T05:28:37.712797+00:00",
+        "event_type": "FAILURE_DETECTED",
+        "input": {
+          "tool": "exploit_simulator",
+          "arguments": {
+            "target": "vulnerable_app.py",
+            "force_gas": 999999
+          }
+        },
+        "output": {
+          "correction_message": "Validation failed for tool 'exploit_simulator':\n- Error: Unknown parameter: 'force_gas' is not a valid parameter for tool 'exploit_simulator'. Allowed parameters: ['gas_limit', 'target']. Missing required parameter 'gas_limit' for tool 'exploit_simulator'.\n- Expected schema for 'exploit_simulator':\n    * gas_limit: integer (required)\n    * target: string (required)\n- Action: Remove any unrecognized parameters and only supply the valid parameters listed above."
+        },
+        "status": "FAILURE",
+        "duration_ms": null,
+        "metadata": {
+          "error_type": "UNKNOWN_PARAMETER",
+          "errors": [
+            "Unknown parameter: 'force_gas' is not a valid parameter for tool 'exploit_simulator'. Allowed parameters: ['gas_limit', 'target'].",
+            "Missing required parameter 'gas_limit' for tool 'exploit_simulator'."
+          ],
+          "blocked": true
+        },
+        "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'exploit_simulator'. Allowed parameters: ['gas_limit', 'target']. Missing required parameter 'gas_limit' for tool 'exploit_simulator'."
+      },
+      {
+        "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+        "event_id": "c5fc8e09-4a6b-4aba-9b3d-2fdc7b56c383",
+        "parent_event_id": "6a53fe1d-f526-44d1-b041-23c08c9a2ab7",
+        "timestamp": "2026-09-18T05:28:37.712815+00:00",
+        "event_type": "RECOVERY",
+        "input": {
+          "recovered_tool": "run_sql_injection_scan",
+          "corrected_arguments": {
+            "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+            "confidence_threshold": 0.7
+          }
+        },
+        "output": {
+          "status": "recovered"
+        },
+        "status": "SUCCESS",
+        "duration_ms": null,
+        "metadata": {
+          "correction_source": "agent_self_reflection",
+          "recovery_strategy": "fallback_to_verified_static_scanner"
+        },
+        "error": null
+      },
+      {
+        "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+        "event_id": "1026d030-f3db-48f6-ba84-b462540cd7bf",
+        "parent_event_id": "c5fc8e09-4a6b-4aba-9b3d-2fdc7b56c383",
+        "timestamp": "2026-09-18T05:28:37.712827+00:00",
+        "event_type": "TOOL_CALL",
+        "input": {
+          "tool": "run_sql_injection_scan",
+          "arguments": {
+            "confidence_threshold": 0.7
+          }
+        },
+        "output": {
+          "status": "executing"
+        },
+        "status": "SUCCESS",
+        "duration_ms": 8.5,
+        "metadata": {},
+        "error": null
+      },
+      {
+        "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+        "event_id": "7656ec8f-933b-4466-8eb7-7b1dcf073568",
+        "parent_event_id": "1026d030-f3db-48f6-ba84-b462540cd7bf",
+        "timestamp": "2026-09-18T05:28:37.713537+00:00",
+        "event_type": "TOOL_RESULT",
+        "input": {
+          "tool": "run_sql_injection_scan"
+        },
+        "output": {
+          "sql_injection_scan": {
+            "vulnerable": false,
+            "details": "No direct SQL string interpolation found."
+          },
+          "secret_leak_scan": {
+            "vulnerable": true,
+            "vuln_type": "CWE-798: Hardcoded Credentials",
+            "details": "Hardcoded credential or key signature identified in source file.",
+            "severity": "HIGH"
+          },
+          "vulnerabilities_found": 2
+        },
+        "status": "SUCCESS",
+        "duration_ms": 14.2,
+        "metadata": {
+          "scanners_executed": [
+            "run_sql_injection_scan",
+            "run_secret_leak_scan"
+          ]
+        },
+        "error": null
+      },
+      {
+        "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+        "event_id": "f2f49ec7-979c-4b77-986e-3efccb131f50",
+        "parent_event_id": "7656ec8f-933b-4466-8eb7-7b1dcf073568",
+        "timestamp": "2026-09-18T05:28:37.713555+00:00",
+        "event_type": "FINAL_RESPONSE",
+        "input": {
+          "finding_title": "CWE-89: SQL Injection via Raw String Interpolation & CWE-798: Exposed AWS Key"
+        },
+        "output": {
+          "vulnerability_detected": true,
+          "title": "CWE-89: SQL Injection via Raw String Interpolation & CWE-798: Exposed AWS Key",
+          "severity": "CRITICAL",
+          "cwe_id": "CWE-89, CWE-798",
+          "description": "Found unsanitized string interpolation in SQL query execution inside get_user_profile(). Additionally discovered hardcoded AWS credentials (AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345).",
+          "remediation": "1. Replace raw f-strings with parameterized queries: cursor.execute('SELECT * FROM users WHERE username = ?', (user_input,))\n2. Move credentials to an encrypted secrets manager or environment variable.",
+          "tool_used": "run_sql_injection_scan, run_secret_leak_scan",
+          "raw_tool_output": {
+            "sql_injection_scan": {
+              "vulnerable": false,
+              "details": "No direct SQL string interpolation found."
+            },
+            "secret_leak_scan": {
+              "vulnerable": true,
+              "vuln_type": "CWE-798: Hardcoded Credentials",
+              "details": "Hardcoded credential or key signature identified in source file.",
+              "severity": "HIGH"
+            },
+            "vulnerabilities_found": 2
+          }
+        },
+        "status": "SUCCESS",
+        "duration_ms": 210.0,
+        "metadata": {
+          "audit_completed": true,
+          "verdict": "VULNERABLE"
+        },
+        "error": null
+      }
+    ],
+    "error": null,
+    "dag": {
+      "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+      "nodes": [
+        {
+          "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+          "event_id": "b36007b7-f46c-465e-999e-52d3e249e768",
+          "parent_event_id": null,
+          "timestamp": "2026-09-18T05:28:37.712588+00:00",
+          "event_type": "USER_QUERY",
+          "input": {
+            "query": "Audit repository test_fixtures/vulnerable_app.py for injection flaws and credential leaks.",
+            "target_file": "vulnerable_app.py",
+            "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()"
+          },
+          "output": {
+            "status": "ACCEPTED",
+            "target": "vulnerable_app.py",
+            "lines_of_code": 11
+          },
+          "status": "SUCCESS",
+          "duration_ms": 4.2,
+          "metadata": {
+            "source": "cli_dashboard",
+            "audit_mode": "deep_inspection"
+          },
+          "error": null
+        },
+        {
+          "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+          "event_id": "7fa5bbd1-6e63-4f15-ac23-f157359e82b7",
+          "parent_event_id": "b36007b7-f46c-465e-999e-52d3e249e768",
+          "timestamp": "2026-09-18T05:28:37.712713+00:00",
+          "event_type": "CONTEXT_SELECTED",
+          "input": {
+            "total_turns": 12,
+            "original_token_count": 274
+          },
+          "output": {
+            "selected_turns": 6,
+            "compressed_token_count": 206,
+            "reduction_percentage": 24.82,
+            "selection_strategy": "security_aware_recency"
+          },
+          "status": "SUCCESS",
+          "duration_ms": null,
+          "metadata": {
+            "original_token_count": 274,
+            "compressed_token_count": 206,
+            "reduction_percentage": 24.82,
+            "selection_strategy": "security_aware_recency",
+            "preserved_items": [
+              "system_prompt",
+              "current_user_request",
+              "recent_turns_window:4",
+              "compressed_historical_turns:7"
+            ]
+          },
+          "error": null
+        },
+        {
+          "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+          "event_id": "dba5765d-35a2-4e04-bf8c-9d49d2c08861",
+          "parent_event_id": "7fa5bbd1-6e63-4f15-ac23-f157359e82b7",
+          "timestamp": "2026-09-18T05:28:37.712729+00:00",
+          "event_type": "LLM_CALL",
+          "input": {
+            "prompt": "Analyze code snippet and determine security verification strategy.",
+            "model": "gpt-4o-mini",
+            "temperature": 0.0,
+            "messages_count": 6
+          },
+          "output": {
+            "thought": "Code contains string interpolation in SQL query execution. Also contains hardcoded AKIA AWS key. Proposing exploit simulation and static verification.",
+            "tool_decision": "exploit_simulator"
+          },
+          "status": "SUCCESS",
+          "duration_ms": 412.5,
+          "metadata": {
+            "tokens": {
+              "prompt_tokens": 340,
+              "completion_tokens": 48
+            }
+          },
+          "error": null
+        },
+        {
+          "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+          "event_id": "599a2468-ebaa-4b87-952c-6b5c2c73743b",
+          "parent_event_id": "dba5765d-35a2-4e04-bf8c-9d49d2c08861",
+          "timestamp": "2026-09-18T05:28:37.712741+00:00",
+          "event_type": "TOOL_SELECTION",
+          "input": {
+            "tool": "exploit_simulator",
+            "arguments": {
+              "target": "vulnerable_app.py",
+              "force_gas": 999999
+            }
+          },
+          "output": {
+            "selected_tool": "exploit_simulator",
+            "requires_validation": true
+          },
+          "status": "SUCCESS",
+          "duration_ms": 1.8,
+          "metadata": {},
+          "error": null
+        },
+        {
+          "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+          "event_id": "c4076620-d986-4826-a52f-bb76173ee7a9",
+          "parent_event_id": "599a2468-ebaa-4b87-952c-6b5c2c73743b",
+          "timestamp": "2026-09-18T05:28:37.712777+00:00",
+          "event_type": "TOOL_VALIDATION",
+          "input": {
+            "tool": "exploit_simulator",
+            "arguments": {
+              "target": "vulnerable_app.py",
+              "force_gas": 999999
+            }
+          },
+          "output": {
+            "is_valid": false,
+            "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'exploit_simulator'. Allowed parameters: ['gas_limit', 'target']. Missing required parameter 'gas_limit' for tool 'exploit_simulator'."
+          },
+          "status": "FAILURE",
+          "duration_ms": null,
+          "metadata": {
+            "error_type": "UNKNOWN_PARAMETER"
+          },
+          "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'exploit_simulator'. Allowed parameters: ['gas_limit', 'target']. Missing required parameter 'gas_limit' for tool 'exploit_simulator'."
+        },
+        {
+          "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+          "event_id": "6a53fe1d-f526-44d1-b041-23c08c9a2ab7",
+          "parent_event_id": "c4076620-d986-4826-a52f-bb76173ee7a9",
+          "timestamp": "2026-09-18T05:28:37.712797+00:00",
+          "event_type": "FAILURE_DETECTED",
+          "input": {
+            "tool": "exploit_simulator",
+            "arguments": {
+              "target": "vulnerable_app.py",
+              "force_gas": 999999
+            }
+          },
+          "output": {
+            "correction_message": "Validation failed for tool 'exploit_simulator':\n- Error: Unknown parameter: 'force_gas' is not a valid parameter for tool 'exploit_simulator'. Allowed parameters: ['gas_limit', 'target']. Missing required parameter 'gas_limit' for tool 'exploit_simulator'.\n- Expected schema for 'exploit_simulator':\n    * gas_limit: integer (required)\n    * target: string (required)\n- Action: Remove any unrecognized parameters and only supply the valid parameters listed above."
+          },
+          "status": "FAILURE",
+          "duration_ms": null,
+          "metadata": {
+            "error_type": "UNKNOWN_PARAMETER",
+            "errors": [
+              "Unknown parameter: 'force_gas' is not a valid parameter for tool 'exploit_simulator'. Allowed parameters: ['gas_limit', 'target'].",
+              "Missing required parameter 'gas_limit' for tool 'exploit_simulator'."
+            ],
+            "blocked": true
+          },
+          "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'exploit_simulator'. Allowed parameters: ['gas_limit', 'target']. Missing required parameter 'gas_limit' for tool 'exploit_simulator'."
+        },
+        {
+          "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+          "event_id": "c5fc8e09-4a6b-4aba-9b3d-2fdc7b56c383",
+          "parent_event_id": "6a53fe1d-f526-44d1-b041-23c08c9a2ab7",
+          "timestamp": "2026-09-18T05:28:37.712815+00:00",
+          "event_type": "RECOVERY",
+          "input": {
+            "recovered_tool": "run_sql_injection_scan",
+            "corrected_arguments": {
+              "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+              "confidence_threshold": 0.7
+            }
+          },
+          "output": {
+            "status": "recovered"
+          },
+          "status": "SUCCESS",
+          "duration_ms": null,
+          "metadata": {
+            "correction_source": "agent_self_reflection",
+            "recovery_strategy": "fallback_to_verified_static_scanner"
+          },
+          "error": null
+        },
+        {
+          "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+          "event_id": "1026d030-f3db-48f6-ba84-b462540cd7bf",
+          "parent_event_id": "c5fc8e09-4a6b-4aba-9b3d-2fdc7b56c383",
+          "timestamp": "2026-09-18T05:28:37.712827+00:00",
+          "event_type": "TOOL_CALL",
+          "input": {
+            "tool": "run_sql_injection_scan",
+            "arguments": {
+              "confidence_threshold": 0.7
+            }
+          },
+          "output": {
+            "status": "executing"
+          },
+          "status": "SUCCESS",
+          "duration_ms": 8.5,
+          "metadata": {},
+          "error": null
+        },
+        {
+          "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+          "event_id": "7656ec8f-933b-4466-8eb7-7b1dcf073568",
+          "parent_event_id": "1026d030-f3db-48f6-ba84-b462540cd7bf",
+          "timestamp": "2026-09-18T05:28:37.713537+00:00",
+          "event_type": "TOOL_RESULT",
+          "input": {
+            "tool": "run_sql_injection_scan"
+          },
+          "output": {
+            "sql_injection_scan": {
+              "vulnerable": false,
+              "details": "No direct SQL string interpolation found."
+            },
+            "secret_leak_scan": {
+              "vulnerable": true,
+              "vuln_type": "CWE-798: Hardcoded Credentials",
+              "details": "Hardcoded credential or key signature identified in source file.",
+              "severity": "HIGH"
+            },
+            "vulnerabilities_found": 2
+          },
+          "status": "SUCCESS",
+          "duration_ms": 14.2,
+          "metadata": {
+            "scanners_executed": [
+              "run_sql_injection_scan",
+              "run_secret_leak_scan"
+            ]
+          },
+          "error": null
+        },
+        {
+          "run_id": "504b4d2d-a940-44d6-ba40-0777be5036f9",
+          "event_id": "f2f49ec7-979c-4b77-986e-3efccb131f50",
+          "parent_event_id": "7656ec8f-933b-4466-8eb7-7b1dcf073568",
+          "timestamp": "2026-09-18T05:28:37.713555+00:00",
+          "event_type": "FINAL_RESPONSE",
+          "input": {
+            "finding_title": "CWE-89: SQL Injection via Raw String Interpolation & CWE-798: Exposed AWS Key"
+          },
+          "output": {
+            "vulnerability_detected": true,
+            "title": "CWE-89: SQL Injection via Raw String Interpolation & CWE-798: Exposed AWS Key",
+            "severity": "CRITICAL",
+            "cwe_id": "CWE-89, CWE-798",
+            "description": "Found unsanitized string interpolation in SQL query execution inside get_user_profile(). Additionally discovered hardcoded AWS credentials (AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345).",
+            "remediation": "1. Replace raw f-strings with parameterized queries: cursor.execute('SELECT * FROM users WHERE username = ?', (user_input,))\n2. Move credentials to an encrypted secrets manager or environment variable.",
+            "tool_used": "run_sql_injection_scan, run_secret_leak_scan",
+            "raw_tool_output": {
+              "sql_injection_scan": {
+                "vulnerable": false,
+                "details": "No direct SQL string interpolation found."
+              },
+              "secret_leak_scan": {
+                "vulnerable": true,
+                "vuln_type": "CWE-798: Hardcoded Credentials",
+                "details": "Hardcoded credential or key signature identified in source file.",
+                "severity": "HIGH"
+              },
+              "vulnerabilities_found": 2
+            }
+          },
+          "status": "SUCCESS",
+          "duration_ms": 210.0,
+          "metadata": {
+            "audit_completed": true,
+            "verdict": "VULNERABLE"
+          },
+          "error": null
+        }
+      ],
+      "edges": [
+        {
+          "source": "b36007b7-f46c-465e-999e-52d3e249e768",
+          "target": "7fa5bbd1-6e63-4f15-ac23-f157359e82b7"
+        },
+        {
+          "source": "7fa5bbd1-6e63-4f15-ac23-f157359e82b7",
+          "target": "dba5765d-35a2-4e04-bf8c-9d49d2c08861"
+        },
+        {
+          "source": "dba5765d-35a2-4e04-bf8c-9d49d2c08861",
+          "target": "599a2468-ebaa-4b87-952c-6b5c2c73743b"
+        },
+        {
+          "source": "599a2468-ebaa-4b87-952c-6b5c2c73743b",
+          "target": "c4076620-d986-4826-a52f-bb76173ee7a9"
+        },
+        {
+          "source": "c4076620-d986-4826-a52f-bb76173ee7a9",
+          "target": "6a53fe1d-f526-44d1-b041-23c08c9a2ab7"
+        },
+        {
+          "source": "6a53fe1d-f526-44d1-b041-23c08c9a2ab7",
+          "target": "c5fc8e09-4a6b-4aba-9b3d-2fdc7b56c383"
+        },
+        {
+          "source": "c5fc8e09-4a6b-4aba-9b3d-2fdc7b56c383",
+          "target": "1026d030-f3db-48f6-ba84-b462540cd7bf"
+        },
+        {
+          "source": "1026d030-f3db-48f6-ba84-b462540cd7bf",
+          "target": "7656ec8f-933b-4466-8eb7-7b1dcf073568"
+        },
+        {
+          "source": "7656ec8f-933b-4466-8eb7-7b1dcf073568",
+          "target": "f2f49ec7-979c-4b77-986e-3efccb131f50"
+        }
+      ],
+      "adjacency_list": {
+        "b36007b7-f46c-465e-999e-52d3e249e768": [
+          "7fa5bbd1-6e63-4f15-ac23-f157359e82b7"
+        ],
+        "7fa5bbd1-6e63-4f15-ac23-f157359e82b7": [
+          "dba5765d-35a2-4e04-bf8c-9d49d2c08861"
+        ],
+        "dba5765d-35a2-4e04-bf8c-9d49d2c08861": [
+          "599a2468-ebaa-4b87-952c-6b5c2c73743b"
+        ],
+        "599a2468-ebaa-4b87-952c-6b5c2c73743b": [
+          "c4076620-d986-4826-a52f-bb76173ee7a9"
+        ],
+        "c4076620-d986-4826-a52f-bb76173ee7a9": [
+          "6a53fe1d-f526-44d1-b041-23c08c9a2ab7"
+        ],
+        "6a53fe1d-f526-44d1-b041-23c08c9a2ab7": [
+          "c5fc8e09-4a6b-4aba-9b3d-2fdc7b56c383"
+        ],
+        "c5fc8e09-4a6b-4aba-9b3d-2fdc7b56c383": [
+          "1026d030-f3db-48f6-ba84-b462540cd7bf"
+        ],
+        "1026d030-f3db-48f6-ba84-b462540cd7bf": [
+          "7656ec8f-933b-4466-8eb7-7b1dcf073568"
+        ],
+        "7656ec8f-933b-4466-8eb7-7b1dcf073568": [
+          "f2f49ec7-979c-4b77-986e-3efccb131f50"
+        ],
+        "f2f49ec7-979c-4b77-986e-3efccb131f50": []
+      },
+      "root_event_ids": [
+        "b36007b7-f46c-465e-999e-52d3e249e768"
+      ]
+    }
+  },
+  "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+  "finding": {
+    "vulnerability_detected": true,
+    "title": "CWE-89: SQL Injection via Raw String Interpolation & CWE-798: Exposed AWS Key",
+    "severity": "CRITICAL",
+    "cwe_id": "CWE-89, CWE-798",
+    "description": "Found unsanitized string interpolation in SQL query execution inside get_user_profile(). Additionally discovered hardcoded AWS credentials (AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345).",
+    "remediation": "1. Replace raw f-strings with parameterized queries: cursor.execute('SELECT * FROM users WHERE username = ?', (user_input,))\n2. Move credentials to an encrypted secrets manager or environment variable.",
+    "tool_used": "run_sql_injection_scan, run_secret_leak_scan",
+    "raw_tool_output": {
+      "sql_injection_scan": {
+        "vulnerable": false,
+        "details": "No direct SQL string interpolation found."
+      },
+      "secret_leak_scan": {
+        "vulnerable": true,
+        "vuln_type": "CWE-798: Hardcoded Credentials",
+        "details": "Hardcoded credential or key signature identified in source file.",
+        "severity": "HIGH"
+      },
+      "vulnerabilities_found": 2
+    }
+  },
+  "context_metrics": {
+    "original_token_count": 274,
+    "compressed_token_count": 206,
+    "reduction_percentage": 24.82,
+    "preserved_items": [
+      "system_prompt",
+      "current_user_request",
+      "recent_turns_window:4",
+      "compressed_historical_turns:7"
+    ]
+  },
+  "failure_details": {
+    "blocked": true,
+    "invalid_tool": "exploit_simulator",
+    "invalid_arguments": {
+      "target": "vulnerable_app.py",
+      "force_gas": 999999
+    },
+    "validation_error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'exploit_simulator'. Allowed parameters: ['gas_limit', 'target']. Missing required parameter 'gas_limit' for tool 'exploit_simulator'.",
+    "correction_message": "Validation failed for tool 'exploit_simulator':\n- Error: Unknown parameter: 'force_gas' is not a valid parameter for tool 'exploit_simulator'. Allowed parameters: ['gas_limit', 'target']. Missing required parameter 'gas_limit' for tool 'exploit_simulator'.\n- Expected schema for 'exploit_simulator':\n    * gas_limit: integer (required)\n    * target: string (required)\n- Action: Remove any unrecognized parameters and only supply the valid parameters listed above."
+  }
+}
