@@ -53,17 +53,22 @@ export default function TeamilyWorkspace({
 }: TeamilyWorkspaceProps) {
   const [activeTab, setActiveTab] = useState<"team" | "shield" | "healer" | "context" | "tracer">("team");
   const [inputCode, setInputCode] = useState(PRESET_CODE.sqli);
+  const [submittedCode, setSubmittedCode] = useState(PRESET_CODE.sqli);
   const [triggerFailure, setTriggerFailure] = useState(true);
   const [copied, setCopied] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const handlePresetSelect = (type: "sqli" | "secrets" | "clean") => {
-    setInputCode(PRESET_CODE[type]);
+    const code = PRESET_CODE[type];
+    setInputCode(code);
+    setSubmittedCode(code);
+    onRunCustomAudit(code, triggerFailure);
   };
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputCode.trim() || isRunning) return;
+    setSubmittedCode(inputCode);
     onRunCustomAudit(inputCode, triggerFailure);
   };
 
@@ -387,7 +392,7 @@ export default function TeamilyWorkspace({
                   Audit this target code for SQL injection vulnerabilities and hardcoded credentials. Enforce all Glass-Box guardrails:
                 </p>
                 <div className="bg-slate-900 rounded-xl p-3 font-mono text-[11px] text-slate-200 overflow-x-auto shadow-inner">
-                  {inputCode}
+                  {submittedCode}
                 </div>
               </div>
 
@@ -419,12 +424,18 @@ export default function TeamilyWorkspace({
               <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs space-y-4 text-xs">
                 {/* Header Checkmark */}
                 <div className="flex items-center space-x-2 pb-3 border-b border-slate-100">
-                  <div className="h-6 w-6 rounded-full bg-emerald-100 text-[#00c968] flex items-center justify-center text-xs font-bold">
-                    ✓
+                  <div className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    traceData.finding.vulnerability_detected
+                      ? "bg-rose-100 text-rose-600"
+                      : "bg-emerald-100 text-[#00c968]"
+                  }`}>
+                    {traceData.finding.vulnerability_detected ? "⚠" : "✓"}
                   </div>
                   <div>
                     <h2 className="text-sm font-bold text-slate-900">
-                      Security Audit Executed & Verified Successfully!
+                      {traceData.finding.vulnerability_detected
+                        ? "Security Vulnerability Detected & Intercepted!"
+                        : "Security Audit Completed: Target Code is Clean & Secure!"}
                     </h2>
                     <p className="text-[11px] text-slate-500">
                       All 4 autonomous guardrails executed with zero unhandled exceptions.
@@ -440,16 +451,38 @@ export default function TeamilyWorkspace({
                   </div>
                   <ul className="space-y-1 text-slate-600 pl-5 list-disc text-[11px] leading-relaxed">
                     <li>
-                      <strong>Target:</strong> <code className="bg-slate-100 px-1 py-0.2 rounded text-slate-800">vulnerable_app.py</code>
+                      <strong>Target:</strong> <code className="bg-slate-100 px-1 py-0.2 rounded text-slate-800">
+                        {submittedCode.includes("def get_user_profile") ? "get_user_profile() [Python]" : "Custom Input Snippet"}
+                      </code>
+                    </li>
+                    <li>
+                      <strong>Status:</strong>{" "}
+                      {traceData.finding.vulnerability_detected ? (
+                        <span className="text-rose-600 font-bold bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded text-[10px]">
+                          ⚠ VULNERABILITY CONFIRMED
+                        </span>
+                      ) : (
+                        <span className="text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded text-[10px]">
+                          ✓ SECURE / CLEAN
+                        </span>
+                      )}
                     </li>
                     <li>
                       <strong>Verified Finding:</strong>{" "}
-                      <span className="text-rose-600 font-bold">{traceData.finding.title}</span>
+                      <span className={traceData.finding.vulnerability_detected ? "text-rose-600 font-bold" : "text-emerald-600 font-bold"}>
+                        {traceData.finding.title}
+                      </span>
                     </li>
                     <li>
                       <strong>CWE ID:</strong>{" "}
                       <span className="font-mono font-semibold text-slate-800">{traceData.finding.cwe_id}</span> &bull; Severity:{" "}
-                      <span className="bg-rose-100 text-rose-700 px-1.5 py-0.2 rounded font-bold text-[10px]">
+                      <span className={`px-1.5 py-0.2 rounded font-bold text-[10px] ${
+                        traceData.finding.severity === "CRITICAL"
+                          ? "bg-rose-100 text-rose-700"
+                          : traceData.finding.severity === "HIGH"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-emerald-100 text-emerald-700"
+                      }`}>
                         {traceData.finding.severity}
                       </span>
                     </li>
@@ -551,15 +584,26 @@ export default function TeamilyWorkspace({
                   </ul>
                 </div>
 
-                {/* Section 5: Remediation Code Card */}
-                <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3.5 space-y-1.5">
-                  <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block">
-                    Remediation Guidance:
-                  </span>
-                  <pre className="bg-white p-2.5 rounded-lg border border-emerald-200/80 text-[11px] font-mono text-emerald-950 overflow-x-auto whitespace-pre-wrap">
-                    {traceData.finding.remediation}
-                  </pre>
-                </div>
+                {/* Section 5: Remediation Code Card or Clean Verification */}
+                {traceData.finding.vulnerability_detected ? (
+                  <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3.5 space-y-1.5">
+                    <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block">
+                      Remediation Guidance:
+                    </span>
+                    <pre className="bg-white p-2.5 rounded-lg border border-emerald-200/80 text-[11px] font-mono text-emerald-950 overflow-x-auto whitespace-pre-wrap">
+                      {traceData.finding.remediation}
+                    </pre>
+                  </div>
+                ) : (
+                  <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3.5 space-y-1">
+                    <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block">
+                      ✓ Security Verification Passed
+                    </span>
+                    <p className="text-[11px] text-emerald-900 leading-relaxed font-sans">
+                      {traceData.finding.description || "No SQL string concatenation or unparameterized queries found. The query safely uses bind parameters."}
+                    </p>
+                  </div>
+                )}
 
                 {/* Teamily Style Footer Link */}
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">

@@ -155,7 +155,10 @@ class SecurityAgent:
 
         # Case 2: Synthesis reporting
         if "Synthesis" in system_msg or "reporting" in system_msg.lower() or "SYNTHESIS_PROMPT" in system_msg or "vulnerability_detected" in last_user_msg:
-            is_vulnerable = "true" in last_user_msg.lower() or "'vulnerable': True" in last_user_msg or '"vulnerable": true' in last_user_msg
+            is_vulnerable = (
+                ('"vulnerable": true' in last_user_msg.lower() or "'vulnerable': true" in last_user_msg.lower())
+                and ('"vulnerable": false' not in last_user_msg.lower() and "'vulnerable': false" not in last_user_msg.lower())
+            )
             if "run_secret_leak_scan" in last_user_msg:
                 return {
                     "vulnerability_detected": is_vulnerable,
@@ -175,13 +178,12 @@ class SecurityAgent:
                     "remediation": "Use parameterized queries or prepared statements instead of raw string interpolation." if is_vulnerable else "Continue using parameterized queries.",
                 }
 
-        # Case 3: Initial tool selection
-        has_secret = bool(re.search(r"AKIA[0-9A-Z]{16}|secret_key|AWS_SECRET", last_user_msg, re.IGNORECASE))
-        has_sql = bool(re.search(r"SELECT|INSERT|UPDATE|DELETE|sqlite3|cursor\.execute", last_user_msg, re.IGNORECASE))
-
         code_part = last_user_msg
         if "Inspect this code snippet and select a verification tool:\n\n" in last_user_msg:
             code_part = last_user_msg.split("Inspect this code snippet and select a verification tool:\n\n", 1)[1]
+
+        has_secret = bool(re.search(r"AKIA[0-9A-Z_]{12,}|secret_key|AWS_SECRET|API_KEY|PASSWORD", code_part, re.IGNORECASE))
+        has_sql = bool(re.search(r"\b(SELECT|INSERT|UPDATE|DELETE)\b|sqlite3|cursor\.execute", code_part, re.IGNORECASE))
 
         if has_sql:
             return {
