@@ -9,64 +9,47 @@
 
 ---
 
-## 1. Executive Summary & Problem Statement
+## 1. Project Overview
 
-Modern AI agents for security auditing are typically **black boxes**:
-- You submit code, wait a few seconds, and receive a vulnerability finding.
-- You have **no visibility** into the tool choices the agent considered, whether it hallucinated non-existent parameters, if a tool call was silently blocked, or how many tokens and milliseconds each reasoning hop consumed.
-- In high-assurance security domains, unvalidated AI tool execution is dangerous—agents can execute destructive operations or produce silent false negatives when tool calls fail silently.
+Traditional AI security agents function as **black boxes**: they ingest code and emit vulnerability findings without exposing intermediate reasoning, tool decisions, rejected arguments, or per-step latency and token consumption.
 
-**VulnSentry** solves this by implementing a **Glass-Box Autonomous Security Auditor**:
-1. **Full DAG Observability:** Every action, decision, prompt, validation check, and tool call is captured as a node in an unbroken **Directed Acyclic Graph (DAG)** with parent-child linkage.
-2. **Pre-Execution Schema Validation (Rule 1):** No tool can execute unless its parameters strictly validate against registered JSON schemas.
-3. **Deterministic Failure Interception & Self-Correction (Rule 2):** When an agent hallucinates parameters, execution is physically blocked, a structured failure record is logged, and the agent is forced into an automated self-correction recovery loop.
-4. **Context Optimization:** Conversation history is dynamically compressed, pruning irrelevant chatter while preserving security-critical context (achieving ~42% token reduction).
-5. **Interactive Visual Dashboard:** A Next.js 16 web interface renders the entire execution DAG, token/latency metrics, and event inspectors in real time.
+**VulnSentry** introduces a **Glass-Box Autonomous Security Auditor** designed for full auditability, deterministic safety, and verifiable recovery:
+
+1. **Full DAG Observability:** Every execution step (query ingestion, model inference, tool selection, parameter validation, failure interception, tool execution, and finding synthesis) is recorded as an immutable node in a **Directed Acyclic Graph (DAG)**.
+2. **Pre-Execution Schema Enforcement (Rule 1):** LLM-generated tool calls are strictly validated against registered schemas before execution, preventing unvalidated or dangerous tool invocations.
+3. **Deterministic Failure Interception & Self-Correction (Rule 2):** When tool calls contain invalid or hallucinated parameters, execution is physically blocked, structured failure telemetry is recorded, and the agent enters an automated recovery loop to correct its parameters.
+4. **Context Optimization:** Multi-turn conversational history is compressed using a security-aware recency heuristic, reducing prompt tokens by ~42% while preserving critical context.
+5. **Interactive Telemetry Dashboard:** A Next.js 16 web interface visualizes the execution timeline, DAG relationships, token throughput, and step latencies.
 
 ---
 
 ## 2. System Architecture
 
-VulnSentry is architected into two cooperating layers: the **Agent & Security Engine** and the **Glass Box Observability & Validation Framework**.
-
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
 │                           Next.js 16 Web Dashboard                              │
-│         (Execution DAG Timeline • Token & Latency Metrics • Event Inspector)    │
+│       (Execution Timeline • Interactive DAG • Token & Latency Metrics)          │
 └────────────────────────────────────────┬────────────────────────────────────────┘
                                          │ telemetry (audit_trace.json)
 ┌────────────────────────────────────────▼────────────────────────────────────────┐
-│                              ROOT RUNNER (run_audit.py)                         │
+│                              ROOT AUDIT RUNNER                                  │
+│                                (run_audit.py)                                   │
 └──────────────────┬─────────────────────────────────────────────┬────────────────┘
                    │                                             │
 ┌──────────────────▼──────────────────┐       ┌──────────────────▼────────────────┐
-│      SECURITY AGENT CORE LOOP       │       │    GLASS BOX OBSERVABILITY LAYER  │
-│          (Owned by Akash)           │       │          (Owned by Jeevan)        │
+│        SECURITY AGENT ENGINE        │       │    GLASS BOX OBSERVABILITY LAYER  │
 ├─────────────────────────────────────┤       ├───────────────────────────────────┤
-│ • SecurityAgent (analyze_code)      │       │ • ExecutionTracer (DAG Engine)    │
-│ • System & Synthesis Prompts        │ ◄───► │ • ToolValidator (Schema Enforcer) │
-│ • Rule 2 Recovery Loop Handler      │       │ • FailureInterceptor (Blocking)   │
-│ • Dual-Mode LLM (Live API + Mock)   │       │ • ContextManager & Compressor     │
-│ • Regex/AST Scanners (SQLi, Keys)   │       │ • Event Dataclasses (11 fields)   │
+│ • SecurityAgent core execution loop │       │ • ExecutionTracer (DAG Engine)    │
+│ • System, Recovery & Synthesis      │ ◄───► │ • ToolValidator (Schema Enforcer) │
+│ • Dual-Mode LLM (Live API + Mock)   │       │ • FailureInterceptor (Blocking)   │
+│ • Rule 2 Recovery Loop Handler      │       │ • ContextManager & Compressor     │
+│ • Static Scanners (SQLi, Secrets)   │       │ • 11 Standardized Event Fields    │
 └─────────────────────────────────────┘       └───────────────────────────────────┘
 ```
 
 ---
 
-## 3. Team Responsibilities & Ownership
-
-To ensure modularity and clean separation of concerns, the project is divided between team members:
-
-| Team Member | Components Owned | Core Responsibilities |
-| :--- | :--- | :--- |
-| **Akash** | `agent/`, `tools/`, `test_fixtures/`, `run_audit.py`, `tests/test_integration.py` | Built the AI Security Agent core loop, prompt synthesis, vulnerability scanners (SQLi, hardcoded credentials), dual-mode LLM handling (online/offline fallback), and the root integration orchestrator. |
-| **Jeevan** | `glassbox/`, `validation/`, `context/`, `dashboard/` | Built the GlassBox ExecutionTracer DAG engine, ToolValidator schema enforcer, FailureInterceptor execution blocker, ContextManager with token compression heuristics, and Next.js visual dashboard. |
-
----
-
-## 4. End-to-End Execution Sequence (The 10-Step DAG Pipeline)
-
-When VulnSentry analyzes target source code (such as `test_fixtures/vulnerable_app.py`), execution proceeds through 10 deterministic steps:
+## 3. End-to-End Execution Sequence (10-Step Pipeline)
 
 ```mermaid
 flowchart TD
@@ -87,97 +70,95 @@ flowchart TD
     SYN --> FR["10. FINAL_RESPONSE<br/>(Standardized SecurityFinding)"]
 ```
 
-### Detailed Step Breakdown:
-1. **`USER_QUERY`**: Ingests source code snippet and records audit parameters.
-2. **`CONTEXT_SELECTED`**: The `ContextManager` uses a security-aware recency strategy to compress multi-turn dialogue, pruning redundant turns while strictly preserving security-relevant context.
-3. **`LLM_CALL` (Tool Selection)**: The AI model examines code patterns (e.g. string interpolation in raw SQL queries or hardcoded key prefixes like `AKIA`) and generates a tool call candidate.
-4. **`TOOL_SELECTION`**: Emits candidate tool name and arguments.
-5. **`TOOL_VALIDATION` (Rule 1)**: `ToolValidator` checks parameters against registered schemas. If an unknown key is present (such as hallucinated parameter `force_gas: 999999`), validation evaluates to `False`.
-6. **`FAILURE_DETECTED` (Rule 2)**: `FailureInterceptor` blocks the tool from executing, records error type `UNKNOWN_PARAMETER`, and formats actionable correction guidance.
-7. **`RECOVERY` (Rule 2 Recovery Loop)**: The agent receives the error description, eliminates the invalid parameter, and re-submits a clean tool call.
-8. **`TOOL_CALL`**: Safe, verified execution of the scanner.
-9. **`TOOL_RESULT`**: Execution of `run_sql_injection_scan` or `run_secret_leak_scan` returning structured vulnerability findings.
-10. **`FINAL_RESPONSE`**: Agent synthesizes raw scanner output into a formal `SecurityFinding` (CWE-ID, Severity, Description, and Remediation).
+### Pipeline Details:
+1. **`USER_QUERY`**: Ingests target code snippet and initializes audit run.
+2. **`CONTEXT_SELECTED`**: Compresses conversation history to eliminate conversational chatter while preserving security constraints.
+3. **`LLM_CALL` (Tool Selection)**: Evaluates code patterns and selects an appropriate security verification tool.
+4. **`TOOL_SELECTION`**: Emits proposed tool name and candidate arguments.
+5. **`TOOL_VALIDATION` (Rule 1)**: Validates arguments against registered JSON schemas prior to execution.
+6. **`FAILURE_DETECTED` (Rule 2)**: If parameters are invalid, execution is blocked, error type is categorized, and correction guidance is generated.
+7. **`RECOVERY` (Rule 2 Self-Correction)**: Agent ingests validation feedback, eliminates invalid arguments, and generates compliant parameters.
+8. **`TOOL_CALL`**: Safe execution of the verified tool.
+9. **`TOOL_RESULT`**: Scanner outputs structured vulnerability detection results.
+10. **`FINAL_RESPONSE`**: Agent synthesizes raw output into a standard report (CWE-ID, Severity, Description, Remediation).
 
 ---
 
-## 5. Telemetry & The 11 Required Event Fields
+## 4. Telemetry Standard: The 11 Required Fields
 
-Every event in VulnSentry conforms to an unbroken 11-field standard required for DAG reconstruction:
+Every event in VulnSentry conforms to a standardized 11-field data structure to support deterministic DAG reconstruction:
 
 | Field | Type | Purpose |
 | :--- | :--- | :--- |
-| `run_id` | `string` | Unique UUID grouping all events within a single audit run. |
-| `event_id` | `string` | Unique UUID for this specific event node. |
-| `parent_event_id` | `string \| null` | UUID of the preceding event, establishing the DAG edge. |
+| `run_id` | `string` | UUID identifying the overarching audit execution run. |
+| `event_id` | `string` | UUID identifying the individual event node. |
+| `parent_event_id` | `string \| null` | UUID of the parent event establishing the execution DAG edge. |
 | `timestamp` | `string` | ISO 8601 UTC timestamp of execution. |
-| `event_type` | `string` | Canonical event identifier (e.g. `USER_QUERY`, `TOOL_VALIDATION`, `FAILURE_DETECTED`). |
-| `input` | `any` | Structured input payload provided to this stage. |
-| `output` | `any` | Structured output payload returned by this stage. |
-| `status` | `string` | Execution status: `SUCCESS`, `FAILURE`, `RUNNING`, or `ERROR`. |
-| `duration_ms` | `float` | Precise step execution latency in milliseconds. |
-| `metadata` | `dict` | Contextual metadata (tokens, model name, error type, blocking flags). |
-| `error` | `string \| null` | Human-readable error message if a failure occurred. |
-
-Telemetry is exported to `audit_trace.json` containing complete nodes, edges, and adjacency lists.
+| `event_type` | `string` | Canonical event type (`USER_QUERY`, `TOOL_VALIDATION`, `FAILURE_DETECTED`, etc.). |
+| `input` | `any` | Structured payload provided to the event step. |
+| `output` | `any` | Structured payload emitted by the event step. |
+| `status` | `string` | Step status: `SUCCESS`, `FAILURE`, `RUNNING`, or `ERROR`. |
+| `duration_ms` | `float` | Step execution latency in milliseconds. |
+| `metadata` | `dict` | Contextual telemetry (tokens, model name, error type, blocking state). |
+| `error` | `string \| null` | Error description if step encountered a failure. |
 
 ---
 
-## 6. Repository Layout
+## 5. Repository Structure
 
 ```text
 VulnSentry/
-├── run_audit.py                  # ROOT SCRIPT: Initializes Tracer, Validator & Agent; runs 2-scan audit
-├── audit_trace.json              # Telemetry output containing full DAG nodes and edges
-├── README.md                     # Project documentation and panel presentation guide
+├── run_audit.py                  # Root execution script (runs clean & recovery scans, exports telemetry)
+├── audit_trace.json              # Complete telemetry trace output with events and DAG edges
+├── README.md                     # Technical documentation
 │
-├── agent/                        # [Akash] Core Security Agent
-│   ├── agent.py                  # SecurityAgent class, dual-mode LLM handling, Rule 2 recovery
-│   ├── findings.py               # SecurityFinding schema (Title, Severity, CWE, Remediation)
-│   └── prompts.py                # System prompt, recovery prompt, synthesis prompt
+├── agent/                        # Security Agent Module
+│   ├── agent.py                  # Core agent loop with dual-mode LLM handling and self-correction
+│   ├── findings.py               # SecurityFinding schema definition
+│   └── prompts.py                # System, recovery, and synthesis prompt templates
 │
-├── tools/                        # [Akash] Scanning Engine & Schemas
-│   ├── schemas.py                # Parameter schemas for tool validation
-│   └── security_scan.py          # Static analysis detectors (SQL injection & leaked secrets)
+├── tools/                        # Verification Scanners & Schemas
+│   ├── schemas.py                # Registered tool parameter schemas
+│   └── security_scan.py          # Static analysis detectors (SQL injection, credential leaks)
 │
-├── test_fixtures/                # [Akash] Target Test Apps
-│   └── vulnerable_app.py         # Sample target with SQL injection & leaked AWS secret
+├── test_fixtures/                # Audit Target Fixtures
+│   └── vulnerable_app.py         # Sample target with SQL injection & hardcoded credentials
 │
-├── glassbox/                     # [Jeevan] Observability Engine
-│   ├── events.py                 # Event & Run dataclasses, DAG builder, 11-field validator
-│   └── tracer.py                 # ExecutionTracer (start_run, log_event, end_run, export_json)
+├── glassbox/                     # Observability Layer
+│   ├── events.py                 # Event dataclasses, 11 required fields, DAG generation
+│   └── tracer.py                 # ExecutionTracer (lifecycle, event logging, JSON export)
 │
-├── validation/                   # [Jeevan] Validation & Interception
-│   ├── tool_validator.py         # ToolValidator validating parameters against registered schemas
-│   └── failure_interceptor.py    # FailureInterceptor blocking invalid calls & logging failures
+├── validation/                   # Pre-Execution Validation Layer
+│   ├── tool_validator.py         # Schema-driven tool argument validation
+│   └── failure_interceptor.py    # Execution blocker & failure detection logger
 │
-├── context/                      # [Jeevan] Context Management
-│   ├── context_manager.py        # ContextManager tracking multi-turn dialogue
-│   └── context_compressor.py     # ContextCompressor pruning chatter (~42% token reduction)
+├── context/                      # Context Optimization
+│   ├── context_manager.py        # Context selection tracking
+│   └── context_compressor.py     # Heuristic context compression (~42% token reduction)
 │
-├── dashboard/                    # [Jeevan] Next.js 16 Web UI
-│   ├── app/page.tsx              # Main dashboard page with timeline, metrics, and JSON viewer
-│   ├── app/components/           # ExecutionTimeline, FailureAlert, ContextMetrics, etc.
-│   └── app/api/trace/route.ts    # REST endpoint serving latest telemetry trace
+├── dashboard/                    # Next.js 16 Trace Visualizer
+│   ├── app/page.tsx              # Main dashboard view (timeline, metrics, JSON inspector)
+│   ├── app/components/           # Timeline and metric visualization components
+│   └── app/api/trace/route.ts    # API route serving trace telemetry
 │
-└── tests/                        # 32 Automated Unit & Integration Tests (100% Pass)
+└── tests/                        # Automated Test Suite (32 Unit & Integration Tests)
     ├── test_integration.py       # End-to-end audit, recovery loop & trace export tests
-    ├── test_tracer.py            # ExecutionTracer DAG structure and 11-field checks
-    ├── test_validator.py         # ToolValidator schema validation checks
-    ├── test_failure_interceptor.py# Failure interception and recovery sequence tests
-    └── test_context_manager.py   # Context compression token reduction tests
+    ├── test_tracer.py            # ExecutionTracer DAG structure & event field verification
+    ├── test_validator.py         # ToolValidator parameter checks
+    ├── test_failure_interceptor.py# Execution blocking & recovery sequence verification
+    └── test_context_manager.py   # Context compression ratio verification
 ```
 
 ---
 
-## 7. How to Run Locally
+## 6. Getting Started
 
 ### Prerequisites
 - Python 3.10+
-- (Optional for Dashboard) Node.js 18+
+- Node.js 18+ (optional, for web dashboard)
 
-### Step 1: Run the Complete Audit Pipeline (CLI)
-To run both the clean scan and the Rule 2 self-correction recovery scan, and generate `audit_trace.json`:
+### 1. Run the Security Audit (CLI)
+Executes both a standard clean audit and a demonstration failure scan showcasing Rule 2 self-correction:
 
 ```bash
 # Windows
@@ -187,7 +168,7 @@ python run_audit.py
 python3 run_audit.py
 ```
 
-**Expected Terminal Output:**
+**Terminal Output:**
 ```text
 =================================================================
            VulnSentry Security Audit Execution
@@ -227,39 +208,35 @@ python3 run_audit.py
 =================================================================
 ```
 
-### Step 2: Run the Automated Test Suite
-To verify all 32 unit and integration tests across all modules:
+### 2. Run the Test Suite
+Validates the entire framework across all unit and integration specifications:
 
 ```bash
 python -m unittest discover tests
 ```
-*Result: 32 tests passed in ~0.20s.*
+*32 tests pass in under 0.20s.*
 
-### Step 3: Run the Visual Dashboard (Optional)
-To run the interactive Next.js web application:
+### 3. Launch the Web Dashboard (Optional)
+Visualizes the execution timeline and DAG graph in a browser:
 
 ```bash
 cd dashboard
 npm install
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser to inspect the visual execution timeline and live DAG graph.
+Open [http://localhost:3000](http://localhost:3000) to inspect the execution trace.
 
 ---
 
-## 8. Presentation & Panel Evaluation Guide
+## 7. Key Evaluation Concepts
 
-When presenting VulnSentry to examiners or evaluators, use the following key talking points:
+### Rule 1: Pre-Execution Schema Validation
+No tool is executed directly from model output. The `ToolValidator` inspects tool names, argument presence, and argument types against registered schemas. If an unapproved parameter is present (such as `force_gas`), the invocation is rejected before touching runtime resources.
 
-### Q1: "What makes VulnSentry different from a standard LangChain or AutoGPT agent?"
-> *"Standard agent frameworks treat execution as an opaque loop where tool errors are swallowed or buried in unformatted console logs. VulnSentry implements a formal **Glass Box observability specification**: every single step is an immutable event node in a DAG containing all 11 standardized telemetry fields. Crucially, we enforce pre-execution schema validation (Rule 1) and structured failure interception (Rule 2), ensuring that invalid tool calls cannot run and that self-correction is systematically tracked."*
+### Rule 2: Failure Interception & Self-Correction
+Upon validation rejection, the `FailureInterceptor` physically prevents execution (`blocked: true`), formats an actionable error message explaining the schema mismatch, and returns control to the agent's recovery loop. The agent adjusts its arguments to conform to the schema and generates a linked `RECOVERY` event.
 
-### Q2: "What is Rule 1 and Rule 2?"
-> - ***Rule 1 (Pre-execution Validation):*** *No tool call is executed directly from LLM output. It must pass through `ToolValidator`, which validates parameter names, required fields, and types against registered JSON schemas.*
-> - ***Rule 2 (Failure Interception & Self-Correction):*** *When validation fails, `FailureInterceptor` blocks execution (`blocked: true`), generates an actionable correction payload, logs `FAILURE_DETECTED`, and prompts the agent with the exact schema discrepancy so it can produce a validated `RECOVERY` event.*
-
-### Q3: "How do you handle API keys and offline testing?"
-> *"The `SecurityAgent` features **dual-mode reasoning**: if an `OPENAI_API_KEY` is provided, it calls the live OpenAI API. If no key is set or the system is offline, it automatically activates a deterministic local reasoning engine. This guarantees that automated testing, continuous integration, and viva demonstrations run reliably with zero unhandled exceptions."*
-
-### Q4: "How does the Context Compressor work?"
-> *"In multi-turn security auditing, passing full conversation histories rapidly exceeds token limits and increases LLM latency. The `ContextCompressor` applies a security-aware heuristic: it prunes conversational filler and duplicate historical chatter while strictly preserving the system prompt, verified security findings, and the latest user query, delivering an average of ~42% token reduction."*
+### Dual-Mode Execution
+`SecurityAgent` includes native dual-mode execution:
+- **Live API Mode:** Connects to OpenAI or custom LLM endpoints when an API key or base URL is supplied.
+- **Deterministic Mock Mode:** Automatically activates when run offline or without API keys, ensuring automated testing and demonstrations run reliably with zero unhandled exceptions.
