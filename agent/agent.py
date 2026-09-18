@@ -8,7 +8,11 @@ import json
 import time
 from typing import Optional, Dict, Any
 
-from openai import OpenAI
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
+
 from tools.schemas import TOOL_SCHEMAS
 from tools.security_scan import run_sql_injection_scan, run_secret_leak_scan
 from agent.prompts import SYSTEM_PROMPT, RECOVERY_PROMPT_TEMPLATE, SYNTHESIS_PROMPT
@@ -43,18 +47,23 @@ class SecurityAgent:
         )
         resolved_base_url = base_url or os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
 
-        # Determine mock mode: if explicitly passed or using dummy key without custom base url
+        # Determine mock mode: if explicitly passed, or OpenAI not installed, or using dummy key without custom base url
         if mock_mode is not None:
             self.mock_mode = mock_mode
+        elif OpenAI is None:
+            self.mock_mode = True
         elif resolved_api_key == "dummy-key-for-local" and not os.getenv("OPENAI_API_KEY") and not os.getenv("LLM_API_KEY") and not base_url:
             self.mock_mode = True
         else:
             self.mock_mode = False
 
-        self.client = OpenAI(
-            base_url=resolved_base_url,
-            api_key=resolved_api_key,
-        )
+        if OpenAI is not None and not self.mock_mode:
+            self.client = OpenAI(
+                base_url=resolved_base_url,
+                api_key=resolved_api_key,
+            )
+        else:
+            self.client = None
 
     def _log(
         self,
