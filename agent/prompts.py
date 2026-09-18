@@ -40,12 +40,12 @@ Tool Used: {tool_name}
 Tool Result: {tool_result}
 
 Output format must be valid JSON:
-{
+{{
     "vulnerability_detected": true/false,
     "cwe_id": "CWE-XX or N/A",
     "severity": "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "NONE",
     "title": "Short title",
     "description": "Clear explanation of what was found",
     "remediation": "How the developer can fix it"
-}
+}}
 """

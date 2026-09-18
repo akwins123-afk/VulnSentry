@@ -6,6 +6,7 @@ def run_sql_injection_scan(code_snippet: str, confidence_threshold: float = 0.7)
         r"execute\s*\(\s*f[\"'].*?\{.*?\}[\"']\s*\)",
         r"execute\s*\(\s*[\"'].*?%s.*?[\"']\s*%",
         r"execute\s*\(\s*[\"'].*?\+.*?\+[\"']\s*\)",
+        r"f[\"'].*?(?:SELECT|INSERT|UPDATE|DELETE).*?\{.*?\}[\"']",
     ]
     matches = []
     for pattern in patterns:
