@@ -1,8 +1,8 @@
 {
-  "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+  "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
   "status": "COMPLETED",
-  "start_time": "2026-09-18T07:15:20.225698+00:00",
-  "end_time": "2026-09-18T07:15:20.227228+00:00",
+  "start_time": "2026-09-18T07:39:35.853183+00:00",
+  "end_time": "2026-09-18T07:39:35.854755+00:00",
   "metadata": {
     "scanner": "VulnSentry",
     "version": "1.0",
@@ -11,27 +11,27 @@
   },
   "events": [
     {
-      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-      "event_id": "9a41053e-f475-4b5c-a588-075ec3d58e36",
+      "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+      "event_id": "ccbe8864-559e-44b6-83ca-74849cc444f2",
       "parent_event_id": null,
-      "timestamp": "2026-09-18T07:15:20.226094+00:00",
+      "timestamp": "2026-09-18T07:39:35.853606+00:00",
       "event_type": "CONTEXT_SELECTED",
       "input": {
         "total_turns": 7,
-        "original_token_count": 293
+        "original_token_count": 318
       },
       "output": {
         "selected_turns": 5,
-        "compressed_token_count": 262,
-        "reduction_percentage": 10.58,
+        "compressed_token_count": 267,
+        "reduction_percentage": 16.04,
         "selection_strategy": "security_aware_recency"
       },
       "status": "SUCCESS",
       "duration_ms": null,
       "metadata": {
-        "original_token_count": 293,
-        "compressed_token_count": 262,
-        "reduction_percentage": 10.58,
+        "original_token_count": 318,
+        "compressed_token_count": 267,
+        "reduction_percentage": 16.04,
         "selection_strategy": "security_aware_recency",
         "preserved_items": [
           "current_user_request",
@@ -42,10 +42,10 @@
       "error": null
     },
     {
-      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-      "event_id": "be80a8d6-8d72-4c9a-95bf-c564a8a21fa7",
+      "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+      "event_id": "b597cf38-7b8f-48c7-9dd8-ee696dc4d7d8",
       "parent_event_id": null,
-      "timestamp": "2026-09-18T07:15:20.226153+00:00",
+      "timestamp": "2026-09-18T07:39:35.853661+00:00",
       "event_type": "USER_QUERY",
       "input": {
         "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n"
@@ -55,15 +55,15 @@
         "trigger_demo_failure": true
       },
       "status": "SUCCESS",
-      "duration_ms": 0,
+      "duration_ms": 0.00095367431640625,
       "metadata": {},
       "error": null
     },
     {
-      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-      "event_id": "d4375c22-5aef-4443-8857-6691753fd23c",
-      "parent_event_id": "be80a8d6-8d72-4c9a-95bf-c564a8a21fa7",
-      "timestamp": "2026-09-18T07:15:20.226609+00:00",
+      "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+      "event_id": "936ea6b7-c7bd-4d22-83db-43fd239d3ba5",
+      "parent_event_id": "b597cf38-7b8f-48c7-9dd8-ee696dc4d7d8",
+      "timestamp": "2026-09-18T07:39:35.854143+00:00",
       "event_type": "LLM_CALL",
       "input": [
         {
@@ -95,16 +95,16 @@
       "duration_ms": 5,
       "metadata": {
         "model": "gpt-4o-mini",
-        "input_tokens": 150,
-        "output_tokens": 60
+        "input_tokens": 364,
+        "output_tokens": 190
       },
       "error": null
     },
     {
-      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-      "event_id": "ad6f9667-b56b-4f68-81a4-20136d849f84",
-      "parent_event_id": "d4375c22-5aef-4443-8857-6691753fd23c",
-      "timestamp": "2026-09-18T07:15:20.226627+00:00",
+      "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+      "event_id": "bd0a29cb-d6b3-48c5-ab79-3346c829f014",
+      "parent_event_id": "936ea6b7-c7bd-4d22-83db-43fd239d3ba5",
+      "timestamp": "2026-09-18T07:39:35.854161+00:00",
       "event_type": "TOOL_SELECTION",
       "input": {
         "tool": "run_sql_injection_scan",
@@ -123,10 +123,10 @@
       "error": null
     },
     {
-      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-      "event_id": "4acc5129-e660-441f-87cb-9aaee05cf590",
-      "parent_event_id": "ad6f9667-b56b-4f68-81a4-20136d849f84",
-      "timestamp": "2026-09-18T07:15:20.226664+00:00",
+      "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+      "event_id": "95dcc071-ec51-41ee-82b3-1494aadee356",
+      "parent_event_id": "bd0a29cb-d6b3-48c5-ab79-3346c829f014",
+      "timestamp": "2026-09-18T07:39:35.854200+00:00",
       "event_type": "TOOL_VALIDATION",
       "input": {
         "tool": "run_sql_injection_scan",
@@ -148,10 +148,10 @@
       "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
     },
     {
-      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-      "event_id": "4dc349bb-7e66-4568-a7e8-fd30fa85d372",
-      "parent_event_id": "4acc5129-e660-441f-87cb-9aaee05cf590",
-      "timestamp": "2026-09-18T07:15:20.226677+00:00",
+      "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+      "event_id": "17fa97da-37af-4aa3-aef2-a637996079cd",
+      "parent_event_id": "95dcc071-ec51-41ee-82b3-1494aadee356",
+      "timestamp": "2026-09-18T07:39:35.854215+00:00",
       "event_type": "FAILURE_DETECTED",
       "input": {
         "tool": "run_sql_injection_scan",
@@ -173,10 +173,10 @@
       "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
     },
     {
-      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-      "event_id": "3161aad0-1460-4e33-9fbe-725bacd9dd63",
-      "parent_event_id": "4dc349bb-7e66-4568-a7e8-fd30fa85d372",
-      "timestamp": "2026-09-18T07:15:20.226729+00:00",
+      "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+      "event_id": "e5609b30-6699-449b-82d3-9869275f8dcc",
+      "parent_event_id": "17fa97da-37af-4aa3-aef2-a637996079cd",
+      "timestamp": "2026-09-18T07:39:35.854264+00:00",
       "event_type": "LLM_CALL",
       "input": [
         {
@@ -208,16 +208,16 @@
       "duration_ms": 5,
       "metadata": {
         "model": "gpt-4o-mini",
-        "input_tokens": 150,
-        "output_tokens": 60
+        "input_tokens": 652,
+        "output_tokens": 86
       },
       "error": null
     },
     {
-      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-      "event_id": "1e81b092-1c3f-4240-ac76-50605e87fa10",
-      "parent_event_id": "3161aad0-1460-4e33-9fbe-725bacd9dd63",
-      "timestamp": "2026-09-18T07:15:20.226751+00:00",
+      "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+      "event_id": "6b72137e-4af0-4a6a-905c-2db3a1e5595c",
+      "parent_event_id": "e5609b30-6699-449b-82d3-9869275f8dcc",
+      "timestamp": "2026-09-18T07:39:35.854285+00:00",
       "event_type": "RECOVERY",
       "input": {
         "recovered_tool": "run_sql_injection_scan",
@@ -237,10 +237,10 @@
       "error": null
     },
     {
-      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-      "event_id": "42e280d1-5eff-416c-af2f-60fde14a8eb0",
-      "parent_event_id": "1e81b092-1c3f-4240-ac76-50605e87fa10",
-      "timestamp": "2026-09-18T07:15:20.226763+00:00",
+      "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+      "event_id": "a49421d4-01f1-4c6b-a8be-6030a7b1bea1",
+      "parent_event_id": "6b72137e-4af0-4a6a-905c-2db3a1e5595c",
+      "timestamp": "2026-09-18T07:39:35.854298+00:00",
       "event_type": "TOOL_CALL",
       "input": {
         "tool": "run_sql_injection_scan",
@@ -258,10 +258,10 @@
       "error": null
     },
     {
-      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-      "event_id": "839f6616-3175-44ca-8884-396a79f3f431",
-      "parent_event_id": "42e280d1-5eff-416c-af2f-60fde14a8eb0",
-      "timestamp": "2026-09-18T07:15:20.227174+00:00",
+      "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+      "event_id": "7c687cbf-74cc-4b5e-935a-96c120c76dce",
+      "parent_event_id": "a49421d4-01f1-4c6b-a8be-6030a7b1bea1",
+      "timestamp": "2026-09-18T07:39:35.854695+00:00",
       "event_type": "TOOL_RESULT",
       "input": {
         "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
@@ -274,17 +274,17 @@
         "severity": "CRITICAL"
       },
       "status": "SUCCESS",
-      "duration_ms": 0.4067420959472656,
+      "duration_ms": 0.39505958557128906,
       "metadata": {
         "vulnerable": true
       },
       "error": null
     },
     {
-      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-      "event_id": "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449",
-      "parent_event_id": "839f6616-3175-44ca-8884-396a79f3f431",
-      "timestamp": "2026-09-18T07:15:20.227205+00:00",
+      "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+      "event_id": "41fee398-f327-40bc-ad56-7cf2109a17c4",
+      "parent_event_id": "7c687cbf-74cc-4b5e-935a-96c120c76dce",
+      "timestamp": "2026-09-18T07:39:35.854732+00:00",
       "event_type": "LLM_CALL",
       "input": [
         {
@@ -308,16 +308,16 @@
       "duration_ms": 5,
       "metadata": {
         "model": "gpt-4o-mini",
-        "input_tokens": 150,
-        "output_tokens": 60
+        "input_tokens": 188,
+        "output_tokens": 88
       },
       "error": null
     },
     {
-      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-      "event_id": "5465bd6a-1f6d-4ac1-a56a-ef82a825e5d4",
-      "parent_event_id": "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449",
-      "timestamp": "2026-09-18T07:15:20.227221+00:00",
+      "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+      "event_id": "3bd15df8-544e-4f21-84bf-9d0c7958a827",
+      "parent_event_id": "41fee398-f327-40bc-ad56-7cf2109a17c4",
+      "timestamp": "2026-09-18T07:39:35.854749+00:00",
       "event_type": "FINAL_RESPONSE",
       "input": {
         "finding_title": "CWE-89: SQL Injection via Raw String Interpolation",
@@ -346,30 +346,30 @@
   ],
   "error": null,
   "dag": {
-    "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+    "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
     "nodes": [
       {
-        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-        "event_id": "9a41053e-f475-4b5c-a588-075ec3d58e36",
+        "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+        "event_id": "ccbe8864-559e-44b6-83ca-74849cc444f2",
         "parent_event_id": null,
-        "timestamp": "2026-09-18T07:15:20.226094+00:00",
+        "timestamp": "2026-09-18T07:39:35.853606+00:00",
         "event_type": "CONTEXT_SELECTED",
         "input": {
           "total_turns": 7,
-          "original_token_count": 293
+          "original_token_count": 318
         },
         "output": {
           "selected_turns": 5,
-          "compressed_token_count": 262,
-          "reduction_percentage": 10.58,
+          "compressed_token_count": 267,
+          "reduction_percentage": 16.04,
           "selection_strategy": "security_aware_recency"
         },
         "status": "SUCCESS",
         "duration_ms": null,
         "metadata": {
-          "original_token_count": 293,
-          "compressed_token_count": 262,
-          "reduction_percentage": 10.58,
+          "original_token_count": 318,
+          "compressed_token_count": 267,
+          "reduction_percentage": 16.04,
           "selection_strategy": "security_aware_recency",
           "preserved_items": [
             "current_user_request",
@@ -380,10 +380,10 @@
         "error": null
       },
       {
-        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-        "event_id": "be80a8d6-8d72-4c9a-95bf-c564a8a21fa7",
+        "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+        "event_id": "b597cf38-7b8f-48c7-9dd8-ee696dc4d7d8",
         "parent_event_id": null,
-        "timestamp": "2026-09-18T07:15:20.226153+00:00",
+        "timestamp": "2026-09-18T07:39:35.853661+00:00",
         "event_type": "USER_QUERY",
         "input": {
           "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n"
@@ -393,15 +393,15 @@
           "trigger_demo_failure": true
         },
         "status": "SUCCESS",
-        "duration_ms": 0,
+        "duration_ms": 0.00095367431640625,
         "metadata": {},
         "error": null
       },
       {
-        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-        "event_id": "d4375c22-5aef-4443-8857-6691753fd23c",
-        "parent_event_id": "be80a8d6-8d72-4c9a-95bf-c564a8a21fa7",
-        "timestamp": "2026-09-18T07:15:20.226609+00:00",
+        "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+        "event_id": "936ea6b7-c7bd-4d22-83db-43fd239d3ba5",
+        "parent_event_id": "b597cf38-7b8f-48c7-9dd8-ee696dc4d7d8",
+        "timestamp": "2026-09-18T07:39:35.854143+00:00",
         "event_type": "LLM_CALL",
         "input": [
           {
@@ -433,16 +433,16 @@
         "duration_ms": 5,
         "metadata": {
           "model": "gpt-4o-mini",
-          "input_tokens": 150,
-          "output_tokens": 60
+          "input_tokens": 364,
+          "output_tokens": 190
         },
         "error": null
       },
       {
-        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-        "event_id": "ad6f9667-b56b-4f68-81a4-20136d849f84",
-        "parent_event_id": "d4375c22-5aef-4443-8857-6691753fd23c",
-        "timestamp": "2026-09-18T07:15:20.226627+00:00",
+        "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+        "event_id": "bd0a29cb-d6b3-48c5-ab79-3346c829f014",
+        "parent_event_id": "936ea6b7-c7bd-4d22-83db-43fd239d3ba5",
+        "timestamp": "2026-09-18T07:39:35.854161+00:00",
         "event_type": "TOOL_SELECTION",
         "input": {
           "tool": "run_sql_injection_scan",
@@ -461,10 +461,10 @@
         "error": null
       },
       {
-        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-        "event_id": "4acc5129-e660-441f-87cb-9aaee05cf590",
-        "parent_event_id": "ad6f9667-b56b-4f68-81a4-20136d849f84",
-        "timestamp": "2026-09-18T07:15:20.226664+00:00",
+        "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+        "event_id": "95dcc071-ec51-41ee-82b3-1494aadee356",
+        "parent_event_id": "bd0a29cb-d6b3-48c5-ab79-3346c829f014",
+        "timestamp": "2026-09-18T07:39:35.854200+00:00",
         "event_type": "TOOL_VALIDATION",
         "input": {
           "tool": "run_sql_injection_scan",
@@ -486,10 +486,10 @@
         "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
       },
       {
-        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-        "event_id": "4dc349bb-7e66-4568-a7e8-fd30fa85d372",
-        "parent_event_id": "4acc5129-e660-441f-87cb-9aaee05cf590",
-        "timestamp": "2026-09-18T07:15:20.226677+00:00",
+        "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+        "event_id": "17fa97da-37af-4aa3-aef2-a637996079cd",
+        "parent_event_id": "95dcc071-ec51-41ee-82b3-1494aadee356",
+        "timestamp": "2026-09-18T07:39:35.854215+00:00",
         "event_type": "FAILURE_DETECTED",
         "input": {
           "tool": "run_sql_injection_scan",
@@ -511,10 +511,10 @@
         "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
       },
       {
-        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-        "event_id": "3161aad0-1460-4e33-9fbe-725bacd9dd63",
-        "parent_event_id": "4dc349bb-7e66-4568-a7e8-fd30fa85d372",
-        "timestamp": "2026-09-18T07:15:20.226729+00:00",
+        "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+        "event_id": "e5609b30-6699-449b-82d3-9869275f8dcc",
+        "parent_event_id": "17fa97da-37af-4aa3-aef2-a637996079cd",
+        "timestamp": "2026-09-18T07:39:35.854264+00:00",
         "event_type": "LLM_CALL",
         "input": [
           {
@@ -546,16 +546,16 @@
         "duration_ms": 5,
         "metadata": {
           "model": "gpt-4o-mini",
-          "input_tokens": 150,
-          "output_tokens": 60
+          "input_tokens": 652,
+          "output_tokens": 86
         },
         "error": null
       },
       {
-        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-        "event_id": "1e81b092-1c3f-4240-ac76-50605e87fa10",
-        "parent_event_id": "3161aad0-1460-4e33-9fbe-725bacd9dd63",
-        "timestamp": "2026-09-18T07:15:20.226751+00:00",
+        "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+        "event_id": "6b72137e-4af0-4a6a-905c-2db3a1e5595c",
+        "parent_event_id": "e5609b30-6699-449b-82d3-9869275f8dcc",
+        "timestamp": "2026-09-18T07:39:35.854285+00:00",
         "event_type": "RECOVERY",
         "input": {
           "recovered_tool": "run_sql_injection_scan",
@@ -575,10 +575,10 @@
         "error": null
       },
       {
-        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-        "event_id": "42e280d1-5eff-416c-af2f-60fde14a8eb0",
-        "parent_event_id": "1e81b092-1c3f-4240-ac76-50605e87fa10",
-        "timestamp": "2026-09-18T07:15:20.226763+00:00",
+        "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+        "event_id": "a49421d4-01f1-4c6b-a8be-6030a7b1bea1",
+        "parent_event_id": "6b72137e-4af0-4a6a-905c-2db3a1e5595c",
+        "timestamp": "2026-09-18T07:39:35.854298+00:00",
         "event_type": "TOOL_CALL",
         "input": {
           "tool": "run_sql_injection_scan",
@@ -596,10 +596,10 @@
         "error": null
       },
       {
-        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-        "event_id": "839f6616-3175-44ca-8884-396a79f3f431",
-        "parent_event_id": "42e280d1-5eff-416c-af2f-60fde14a8eb0",
-        "timestamp": "2026-09-18T07:15:20.227174+00:00",
+        "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+        "event_id": "7c687cbf-74cc-4b5e-935a-96c120c76dce",
+        "parent_event_id": "a49421d4-01f1-4c6b-a8be-6030a7b1bea1",
+        "timestamp": "2026-09-18T07:39:35.854695+00:00",
         "event_type": "TOOL_RESULT",
         "input": {
           "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
@@ -612,17 +612,17 @@
           "severity": "CRITICAL"
         },
         "status": "SUCCESS",
-        "duration_ms": 0.4067420959472656,
+        "duration_ms": 0.39505958557128906,
         "metadata": {
           "vulnerable": true
         },
         "error": null
       },
       {
-        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-        "event_id": "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449",
-        "parent_event_id": "839f6616-3175-44ca-8884-396a79f3f431",
-        "timestamp": "2026-09-18T07:15:20.227205+00:00",
+        "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+        "event_id": "41fee398-f327-40bc-ad56-7cf2109a17c4",
+        "parent_event_id": "7c687cbf-74cc-4b5e-935a-96c120c76dce",
+        "timestamp": "2026-09-18T07:39:35.854732+00:00",
         "event_type": "LLM_CALL",
         "input": [
           {
@@ -646,16 +646,16 @@
         "duration_ms": 5,
         "metadata": {
           "model": "gpt-4o-mini",
-          "input_tokens": 150,
-          "output_tokens": 60
+          "input_tokens": 188,
+          "output_tokens": 88
         },
         "error": null
       },
       {
-        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
-        "event_id": "5465bd6a-1f6d-4ac1-a56a-ef82a825e5d4",
-        "parent_event_id": "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449",
-        "timestamp": "2026-09-18T07:15:20.227221+00:00",
+        "run_id": "93052ae1-ae3c-4e50-a38b-4a04766fd00d",
+        "event_id": "3bd15df8-544e-4f21-84bf-9d0c7958a827",
+        "parent_event_id": "41fee398-f327-40bc-ad56-7cf2109a17c4",
+        "timestamp": "2026-09-18T07:39:35.854749+00:00",
         "event_type": "FINAL_RESPONSE",
         "input": {
           "finding_title": "CWE-89: SQL Injection via Raw String Interpolation",
@@ -684,83 +684,83 @@
     ],
     "edges": [
       {
-        "source": "be80a8d6-8d72-4c9a-95bf-c564a8a21fa7",
-        "target": "d4375c22-5aef-4443-8857-6691753fd23c"
+        "source": "b597cf38-7b8f-48c7-9dd8-ee696dc4d7d8",
+        "target": "936ea6b7-c7bd-4d22-83db-43fd239d3ba5"
       },
       {
-        "source": "d4375c22-5aef-4443-8857-6691753fd23c",
-        "target": "ad6f9667-b56b-4f68-81a4-20136d849f84"
+        "source": "936ea6b7-c7bd-4d22-83db-43fd239d3ba5",
+        "target": "bd0a29cb-d6b3-48c5-ab79-3346c829f014"
       },
       {
-        "source": "ad6f9667-b56b-4f68-81a4-20136d849f84",
-        "target": "4acc5129-e660-441f-87cb-9aaee05cf590"
+        "source": "bd0a29cb-d6b3-48c5-ab79-3346c829f014",
+        "target": "95dcc071-ec51-41ee-82b3-1494aadee356"
       },
       {
-        "source": "4acc5129-e660-441f-87cb-9aaee05cf590",
-        "target": "4dc349bb-7e66-4568-a7e8-fd30fa85d372"
+        "source": "95dcc071-ec51-41ee-82b3-1494aadee356",
+        "target": "17fa97da-37af-4aa3-aef2-a637996079cd"
       },
       {
-        "source": "4dc349bb-7e66-4568-a7e8-fd30fa85d372",
-        "target": "3161aad0-1460-4e33-9fbe-725bacd9dd63"
+        "source": "17fa97da-37af-4aa3-aef2-a637996079cd",
+        "target": "e5609b30-6699-449b-82d3-9869275f8dcc"
       },
       {
-        "source": "3161aad0-1460-4e33-9fbe-725bacd9dd63",
-        "target": "1e81b092-1c3f-4240-ac76-50605e87fa10"
+        "source": "e5609b30-6699-449b-82d3-9869275f8dcc",
+        "target": "6b72137e-4af0-4a6a-905c-2db3a1e5595c"
       },
       {
-        "source": "1e81b092-1c3f-4240-ac76-50605e87fa10",
-        "target": "42e280d1-5eff-416c-af2f-60fde14a8eb0"
+        "source": "6b72137e-4af0-4a6a-905c-2db3a1e5595c",
+        "target": "a49421d4-01f1-4c6b-a8be-6030a7b1bea1"
       },
       {
-        "source": "42e280d1-5eff-416c-af2f-60fde14a8eb0",
-        "target": "839f6616-3175-44ca-8884-396a79f3f431"
+        "source": "a49421d4-01f1-4c6b-a8be-6030a7b1bea1",
+        "target": "7c687cbf-74cc-4b5e-935a-96c120c76dce"
       },
       {
-        "source": "839f6616-3175-44ca-8884-396a79f3f431",
-        "target": "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449"
+        "source": "7c687cbf-74cc-4b5e-935a-96c120c76dce",
+        "target": "41fee398-f327-40bc-ad56-7cf2109a17c4"
       },
       {
-        "source": "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449",
-        "target": "5465bd6a-1f6d-4ac1-a56a-ef82a825e5d4"
+        "source": "41fee398-f327-40bc-ad56-7cf2109a17c4",
+        "target": "3bd15df8-544e-4f21-84bf-9d0c7958a827"
       }
     ],
     "adjacency_list": {
-      "9a41053e-f475-4b5c-a588-075ec3d58e36": [],
-      "be80a8d6-8d72-4c9a-95bf-c564a8a21fa7": [
-        "d4375c22-5aef-4443-8857-6691753fd23c"
+      "ccbe8864-559e-44b6-83ca-74849cc444f2": [],
+      "b597cf38-7b8f-48c7-9dd8-ee696dc4d7d8": [
+        "936ea6b7-c7bd-4d22-83db-43fd239d3ba5"
       ],
-      "d4375c22-5aef-4443-8857-6691753fd23c": [
-        "ad6f9667-b56b-4f68-81a4-20136d849f84"
+      "936ea6b7-c7bd-4d22-83db-43fd239d3ba5": [
+        "bd0a29cb-d6b3-48c5-ab79-3346c829f014"
       ],
-      "ad6f9667-b56b-4f68-81a4-20136d849f84": [
-        "4acc5129-e660-441f-87cb-9aaee05cf590"
+      "bd0a29cb-d6b3-48c5-ab79-3346c829f014": [
+        "95dcc071-ec51-41ee-82b3-1494aadee356"
       ],
-      "4acc5129-e660-441f-87cb-9aaee05cf590": [
-        "4dc349bb-7e66-4568-a7e8-fd30fa85d372"
+      "95dcc071-ec51-41ee-82b3-1494aadee356": [
+        "17fa97da-37af-4aa3-aef2-a637996079cd"
       ],
-      "4dc349bb-7e66-4568-a7e8-fd30fa85d372": [
-        "3161aad0-1460-4e33-9fbe-725bacd9dd63"
+      "17fa97da-37af-4aa3-aef2-a637996079cd": [
+        "e5609b30-6699-449b-82d3-9869275f8dcc"
       ],
-      "3161aad0-1460-4e33-9fbe-725bacd9dd63": [
-        "1e81b092-1c3f-4240-ac76-50605e87fa10"
+      "e5609b30-6699-449b-82d3-9869275f8dcc": [
+        "6b72137e-4af0-4a6a-905c-2db3a1e5595c"
       ],
-      "1e81b092-1c3f-4240-ac76-50605e87fa10": [
-        "42e280d1-5eff-416c-af2f-60fde14a8eb0"
+      "6b72137e-4af0-4a6a-905c-2db3a1e5595c": [
+        "a49421d4-01f1-4c6b-a8be-6030a7b1bea1"
       ],
-      "42e280d1-5eff-416c-af2f-60fde14a8eb0": [
-        "839f6616-3175-44ca-8884-396a79f3f431"
+      "a49421d4-01f1-4c6b-a8be-6030a7b1bea1": [
+        "7c687cbf-74cc-4b5e-935a-96c120c76dce"
       ],
-      "839f6616-3175-44ca-8884-396a79f3f431": [
-        "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449"
+      "7c687cbf-74cc-4b5e-935a-96c120c76dce": [
+        "41fee398-f327-40bc-ad56-7cf2109a17c4"
       ],
-      "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449": [
-        "5465bd6a-1f6d-4ac1-a56a-ef82a825e5d4"
+      "41fee398-f327-40bc-ad56-7cf2109a17c4": [
+        "3bd15df8-544e-4f21-84bf-9d0c7958a827"
       ],
-      "5465bd6a-1f6d-4ac1-a56a-ef82a825e5d4": []
+      "3bd15df8-544e-4f21-84bf-9d0c7958a827": []
     },
     "root_event_ids": [
-      "9a41053e-f475-4b5c-a588-075ec3d58e36",
-      "be80a8d6-8d72-4c9a-95bf-c564a8a21fa7"
+      "ccbe8864-559e-44b6-83ca-74849cc444f2",
+      "b597cf38-7b8f-48c7-9dd8-ee696dc4d7d8"
     ]
   }
 }

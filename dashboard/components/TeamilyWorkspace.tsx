@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import { NormalizedTrace, TraceEvent } from "@/lib/trace";
-import AgentAvatar from "./AgentAvatars";
+import AgentAvatar, { AgentAvatarType } from "./AgentAvatars";
 import DatadogObservabilityView from "./DatadogObservabilityView";
+import RoleManagementModal, { PromptingPersona, DEFAULT_PERSONAS } from "./RoleManagementModal";
 
 interface TeamilyWorkspaceProps {
   traceData: NormalizedTrace;
@@ -16,7 +17,7 @@ interface TeamilyWorkspaceProps {
 export interface AgentRole {
   id: string;
   name: string;
-  avatarType: "orchestrator" | "shield" | "healer" | "context" | "tracer" | "datadog" | "pentester" | "architect" | "compliance" | "custom";
+  avatarType: AgentAvatarType;
   description: string;
   systemRole: string;
   isActiveInChat: boolean;
@@ -155,6 +156,9 @@ export default function TeamilyWorkspace({
   const [newRoleName, setNewRoleName] = useState("");
   const [newRoleDesc, setNewRoleDesc] = useState("");
   const [roleNotice, setRoleNotice] = useState<string | null>(null);
+  const [activePersona, setActivePersona] = useState<PromptingPersona>(DEFAULT_PERSONAS[0]);
+  const [lockdownMode, setLockdownMode] = useState(false);
+  const [showRoleManagement, setShowRoleManagement] = useState(false);
 
   const [geminiMessage, setGeminiMessage] = useState<string>(
     "Jeevan, I'm the VulnSentry Lead AI Agent powered by Gemini 3.6 Flash. I'm actively monitoring your audit pipeline alongside our active 4-agent chat chamber and Datadog APM."
@@ -239,7 +243,11 @@ export default function TeamilyWorkspace({
           hasFailure: hasFail,
           contextSavings: traceData.context?.reduction_percentage || "42.8%",
           activeRoles: activeRoles.map((r) => ({ name: r.name, role: r.systemRole, description: r.description })),
-          speakerRole: activeRoles[0] || null,
+          speakerRole: {
+            name: activePersona.title,
+            role: activePersona.systemPrompt,
+            description: activePersona.expertise,
+          },
         }),
       });
       if (res.ok) {
@@ -358,6 +366,15 @@ export default function TeamilyWorkspace({
               </svg>
             </button>
 
+            {/* RBAC Access Management Button */}
+            <button
+              onClick={() => setShowRoleManagement(true)}
+              title="Workspace RBAC & Feature Access Management"
+              className="p-2.5 rounded-xl hover:bg-slate-100 hover:text-slate-600 transition-colors text-slate-400"
+            >
+              <AgentAvatar type="rbac" size="sm" showStatus={false} />
+            </button>
+
             {/* Technical SOC Switcher */}
             {onToggleTechnicalView && (
               <button
@@ -454,6 +471,23 @@ export default function TeamilyWorkspace({
               </div>
               <p className="text-[11px] text-purple-700 truncate mt-0.5 font-medium">
                 Waterfall Spans &bull; SIEM &bull; DogStatsD
+              </p>
+            </div>
+          </div>
+
+          {/* RBAC & Personas Channel */}
+          <div
+            onClick={() => setShowRoleManagement(true)}
+            className="p-2.5 rounded-2xl cursor-pointer transition-all flex items-center space-x-3 hover:bg-indigo-50/70 text-slate-700 border border-transparent"
+          >
+            <AgentAvatar type="rbac" size="md" showStatus={false} />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-900 truncate">RBAC & Personas</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-800 font-mono font-bold">RBAC</span>
+              </div>
+              <p className="text-[11px] text-slate-500 truncate mt-0.5 font-medium">
+                Workspace Roles &bull; AI Personas
               </p>
             </div>
           </div>
@@ -559,9 +593,26 @@ export default function TeamilyWorkspace({
               </div>
             </div>
 
-            {/* Active Chamber Avatars Stack */}
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center -space-x-1.5 mr-2">
+            {/* Active Persona, Lockdown & Chamber Avatars */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setShowRoleManagement(true)}
+                title="Switch Role-Based AI Persona or Manage RBAC"
+                className="px-2.5 py-1 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-semibold flex items-center space-x-1.5 text-slate-700 shadow-2xs transition-all"
+              >
+                <AgentAvatar type={activePersona.avatarType} size="sm" showStatus={false} />
+                <span className="truncate max-w-[130px] font-sans">{activePersona.title}</span>
+                <span className="text-[10px] text-slate-400 font-normal">&bull; Switch</span>
+              </button>
+
+              {lockdownMode && (
+                <span className="text-[10px] font-bold px-2 py-1 rounded-xl bg-rose-100 text-rose-800 border border-rose-300 flex items-center gap-1 font-mono">
+                  <span>🔒</span>
+                  <span>LOCKDOWN</span>
+                </span>
+              )}
+
+              <div className="flex items-center -space-x-1.5 ml-1">
                 {activeRoles.map((r) => (
                   <div key={r.id} title={`${r.name} (${r.description})`}>
                     <AgentAvatar type={r.avatarType} label={r.name} size="sm" showStatus={false} />
@@ -571,17 +622,17 @@ export default function TeamilyWorkspace({
 
               <button
                 onClick={handleCopyTrace}
-                className="text-xs px-3 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 transition-colors font-mono flex items-center space-x-1"
+                className="text-xs px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 transition-colors font-mono flex items-center space-x-1"
               >
-                <span>{copied ? "✓ Copied" : "Copy Trace JSON"}</span>
+                <span>{copied ? "✓" : "JSON"}</span>
               </button>
 
               <button
                 onClick={() => setActiveTab("datadog")}
                 className="text-xs px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 transition-colors font-medium flex items-center space-x-1"
               >
-                <span>🐕</span>
-                <span>Datadog APM</span>
+                <span className="text-sm">🐕</span>
+                <span>Datadog</span>
               </button>
             </div>
           </header>
@@ -619,25 +670,31 @@ export default function TeamilyWorkspace({
             </div>
 
             {/* ========================================================================= */}
-            {/* GEMINI 3.6 FLASH LIVE AGENT INTERACTION BUBBLE                            */}
+            {/* GEMINI 3.6 FLASH ROLE-BASED PERSONA INTERACTION BUBBLE                   */}
             {/* ========================================================================= */}
             <div className="flex items-start space-x-3">
-              <AgentAvatar type="orchestrator" size="md" />
+              <AgentAvatar type={activePersona.avatarType} size="md" />
               <div className="flex-1 max-w-3xl space-y-1.5">
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs font-bold text-slate-900">VulnSentry Lead Co-Pilot</span>
+                  <span className="text-xs font-bold text-slate-900">{activePersona.title}</span>
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border border-emerald-300 font-mono flex items-center gap-1">
                     <span>✨</span>
                     <span>Gemini 3.6 Flash</span>
                   </span>
-                  <span className="text-[10px] text-slate-400">Chamber Response</span>
+                  <span className="text-[10px] text-slate-400">Role Persona</span>
+                  <button
+                    onClick={() => setShowRoleManagement(true)}
+                    className="text-[10px] text-[#00c968] font-bold hover:underline ml-1"
+                  >
+                    Switch Role &rarr;
+                  </button>
                 </div>
 
                 <div className="bg-gradient-to-br from-[#f0faf5] via-white to-[#e8f6ef] border border-emerald-200/90 rounded-2xl rounded-tl-sm p-4 text-xs text-slate-800 shadow-xs space-y-2">
                   {isGeminiLoading ? (
                     <div className="flex items-center space-x-2 text-emerald-700 font-mono text-xs py-1">
                       <div className="h-3.5 w-3.5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                      <span>Evaluating your code with your active agent team in real-time...</span>
+                      <span>{activePersona.title} is evaluating code vulnerabilities and defenses...</span>
                     </div>
                   ) : (
                     <p className="text-xs text-slate-700 leading-relaxed font-sans font-medium whitespace-pre-wrap">
@@ -1001,6 +1058,24 @@ export default function TeamilyWorkspace({
           </div>
         </div>
       )}
+
+      {/* ========================================================================= */}
+      {/* 5. CHATGPT-STYLE RBAC WORKSPACE & ROLE-BASED PROMPTING MODAL              */}
+      {/* ========================================================================= */}
+      <RoleManagementModal
+        isOpen={showRoleManagement}
+        onClose={() => setShowRoleManagement(false)}
+        activePersona={activePersona}
+        onSelectPersona={(p) => {
+          setActivePersona(p);
+          fetchGeminiCommentary(submittedCode, triggerFailure);
+        }}
+        lockdownMode={lockdownMode}
+        onToggleLockdown={setLockdownMode}
+        onRoleCreated={(name, prompt) => {
+          handleCreateRole(name, prompt);
+        }}
+      />
     </div>
   );
 }
