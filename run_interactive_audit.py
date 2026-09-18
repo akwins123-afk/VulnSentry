@@ -43,15 +43,20 @@ def run_interactive_audit(
     # 1. Piece 3: ContextManager (Token Compression & Turn Pruning)
     cm = ContextManager(tracer=tracer, default_run_id=run_id)
     history = list(conversation_history or [])
-    # Add context turns if minimal to demonstrate token pruning
+    # Add context turns if minimal to demonstrate token pruning with dynamic token sizing
     if len(history) < 6:
+        clean_code = code_snippet.strip()
+        lines = [l for l in clean_code.split("\n") if l.strip()]
+        line_count = len(lines)
+        char_count = len(clean_code)
+        
         sample_context = [
-            {"role": "user", "content": "Can you check my microservice for general security vulnerabilities?"},
-            {"role": "assistant", "content": "Sure, I am ready to inspect your endpoints, queries, and secret management."},
-            {"role": "user", "content": "We are deploying to AWS production tomorrow morning at 9am."},
-            {"role": "assistant", "content": "Noted. Please share the code snippets or database queries you wish to audit."},
-            {"role": "user", "content": "Also remember to check if our database connection pool settings are optimal."},
-            {"role": "assistant", "content": "I will keep connection pooling in mind, but let's prioritize high-severity injection and credential leak risks first."},
+            {"role": "user", "content": f"Security auditor, prepare a scan pipeline for our microservice repository containing {line_count} lines of code ({char_count} chars)."},
+            {"role": "assistant", "content": "Security scanner initialized. Rule 1 schema validator and Rule 2 failure interceptor are engaged."},
+            {"role": "user", "content": f"Previous commit logs show potential injection vectors in database endpoints."},
+            {"role": "assistant", "content": "I have registered the tool schemas for SQL injection and AWS credential leak scanners."},
+            {"role": "user", "content": "Please verify if the submitted functions contain unparameterized query strings or hardcoded access tokens."},
+            {"role": "assistant", "content": "Understood. Please provide the target code artifact for deterministic AST and schema verification."},
         ]
         history = sample_context + history
 

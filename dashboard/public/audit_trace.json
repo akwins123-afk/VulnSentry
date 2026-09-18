@@ -1,8 +1,8 @@
 {
-  "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+  "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
   "status": "COMPLETED",
-  "start_time": "2026-09-18T06:56:46.808576+00:00",
-  "end_time": "2026-09-18T06:56:46.810020+00:00",
+  "start_time": "2026-09-18T07:15:20.225698+00:00",
+  "end_time": "2026-09-18T07:15:20.227228+00:00",
   "metadata": {
     "scanner": "VulnSentry",
     "version": "1.0",
@@ -11,27 +11,27 @@
   },
   "events": [
     {
-      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-      "event_id": "6cc1d891-dac3-4daa-a9f7-530c4e5c19e7",
+      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+      "event_id": "9a41053e-f475-4b5c-a588-075ec3d58e36",
       "parent_event_id": null,
-      "timestamp": "2026-09-18T06:56:46.808979+00:00",
+      "timestamp": "2026-09-18T07:15:20.226094+00:00",
       "event_type": "CONTEXT_SELECTED",
       "input": {
         "total_turns": 7,
-        "original_token_count": 239
+        "original_token_count": 293
       },
       "output": {
         "selected_turns": 5,
-        "compressed_token_count": 208,
-        "reduction_percentage": 12.97,
+        "compressed_token_count": 262,
+        "reduction_percentage": 10.58,
         "selection_strategy": "security_aware_recency"
       },
       "status": "SUCCESS",
       "duration_ms": null,
       "metadata": {
-        "original_token_count": 239,
-        "compressed_token_count": 208,
-        "reduction_percentage": 12.97,
+        "original_token_count": 293,
+        "compressed_token_count": 262,
+        "reduction_percentage": 10.58,
         "selection_strategy": "security_aware_recency",
         "preserved_items": [
           "current_user_request",
@@ -42,28 +42,28 @@
       "error": null
     },
     {
-      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-      "event_id": "3a5b62f4-117a-427c-aa48-1f7e837deab3",
+      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+      "event_id": "be80a8d6-8d72-4c9a-95bf-c564a8a21fa7",
       "parent_event_id": null,
-      "timestamp": "2026-09-18T06:56:46.809044+00:00",
+      "timestamp": "2026-09-18T07:15:20.226153+00:00",
       "event_type": "USER_QUERY",
       "input": {
-        "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()"
+        "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n"
       },
       "output": {
         "action": "security_audit",
         "trigger_demo_failure": true
       },
       "status": "SUCCESS",
-      "duration_ms": 0.0016689300537109375,
+      "duration_ms": 0,
       "metadata": {},
       "error": null
     },
     {
-      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-      "event_id": "ff0210d7-de59-433e-a0be-d96fc82b5d8e",
-      "parent_event_id": "3a5b62f4-117a-427c-aa48-1f7e837deab3",
-      "timestamp": "2026-09-18T06:56:46.809424+00:00",
+      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+      "event_id": "d4375c22-5aef-4443-8857-6691753fd23c",
+      "parent_event_id": "be80a8d6-8d72-4c9a-95bf-c564a8a21fa7",
+      "timestamp": "2026-09-18T07:15:20.226609+00:00",
       "event_type": "LLM_CALL",
       "input": [
         {
@@ -72,11 +72,11 @@
         },
         {
           "role": "user",
-          "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()"
+          "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n"
         },
         {
           "role": "assistant",
-          "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\ndef get_user_profile(user_input: str):\\n    conn = sqlite3.connect(\\\"users.db\\\")\\n    cursor = conn.cursor()\\n    # SECURE: Parameterized Query\\n    query = \\\"SELECT * FROM users WHERE username = ?\\\"\\n    cursor.execute(query, (user_input,))\\n    return cursor.fetchall()\", \"confidence_threshold\": 0.7}}"
+          "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\ndef get_user_profile_vulnerable(username):\\n    # DANGER: Directly injecting user input into the SQL string\\n    query = f\\\"SELECT * FROM users WHERE username = '{username}'\\\"\\n    \\n    conn = sqlite3.connect(\\\"database.db\\\")\\n    cursor = conn.cursor()\\n    cursor.execute(query)\\n    return cursor.fetchall()\\n\\n# If an attacker enters: admin' OR '1'='1\\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\\n# This bypasses authentication and returns all user data.\\n\", \"confidence_threshold\": 0.7}}"
         },
         {
           "role": "user",
@@ -87,7 +87,7 @@
         "thought": "Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.",
         "tool_name": "run_sql_injection_scan",
         "tool_args": {
-          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+          "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
           "confidence_threshold": 0.7
         }
       },
@@ -101,15 +101,15 @@
       "error": null
     },
     {
-      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-      "event_id": "3529a20d-e3e9-4c56-85ce-ce6c029b4417",
-      "parent_event_id": "ff0210d7-de59-433e-a0be-d96fc82b5d8e",
-      "timestamp": "2026-09-18T06:56:46.809442+00:00",
+      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+      "event_id": "ad6f9667-b56b-4f68-81a4-20136d849f84",
+      "parent_event_id": "d4375c22-5aef-4443-8857-6691753fd23c",
+      "timestamp": "2026-09-18T07:15:20.226627+00:00",
       "event_type": "TOOL_SELECTION",
       "input": {
         "tool": "run_sql_injection_scan",
         "arguments": {
-          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+          "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
           "confidence_threshold": 0.7,
           "force_gas": 999999
         }
@@ -123,15 +123,15 @@
       "error": null
     },
     {
-      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-      "event_id": "357d60d9-dd0d-4b07-a549-23eca1db94f9",
-      "parent_event_id": "3529a20d-e3e9-4c56-85ce-ce6c029b4417",
-      "timestamp": "2026-09-18T06:56:46.809478+00:00",
+      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+      "event_id": "4acc5129-e660-441f-87cb-9aaee05cf590",
+      "parent_event_id": "ad6f9667-b56b-4f68-81a4-20136d849f84",
+      "timestamp": "2026-09-18T07:15:20.226664+00:00",
       "event_type": "TOOL_VALIDATION",
       "input": {
         "tool": "run_sql_injection_scan",
         "arguments": {
-          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+          "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
           "confidence_threshold": 0.7,
           "force_gas": 999999
         }
@@ -141,22 +141,22 @@
         "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
       },
       "status": "FAILURE",
-      "duration_ms": 0.0209808349609375,
+      "duration_ms": 0.024080276489257812,
       "metadata": {
         "error_type": "UNKNOWN_PARAMETER"
       },
       "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
     },
     {
-      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-      "event_id": "4efde00b-604a-4953-928c-a06435398946",
-      "parent_event_id": "357d60d9-dd0d-4b07-a549-23eca1db94f9",
-      "timestamp": "2026-09-18T06:56:46.809491+00:00",
+      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+      "event_id": "4dc349bb-7e66-4568-a7e8-fd30fa85d372",
+      "parent_event_id": "4acc5129-e660-441f-87cb-9aaee05cf590",
+      "timestamp": "2026-09-18T07:15:20.226677+00:00",
       "event_type": "FAILURE_DETECTED",
       "input": {
         "tool": "run_sql_injection_scan",
         "arguments": {
-          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+          "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
           "confidence_threshold": 0.7,
           "force_gas": 999999
         }
@@ -173,10 +173,10 @@
       "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
     },
     {
-      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-      "event_id": "e4d38eb1-5818-407a-a4e2-883edd0b53f1",
-      "parent_event_id": "4efde00b-604a-4953-928c-a06435398946",
-      "timestamp": "2026-09-18T06:56:46.809542+00:00",
+      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+      "event_id": "3161aad0-1460-4e33-9fbe-725bacd9dd63",
+      "parent_event_id": "4dc349bb-7e66-4568-a7e8-fd30fa85d372",
+      "timestamp": "2026-09-18T07:15:20.226729+00:00",
       "event_type": "LLM_CALL",
       "input": [
         {
@@ -185,11 +185,11 @@
         },
         {
           "role": "user",
-          "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()"
+          "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n"
         },
         {
           "role": "assistant",
-          "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\ndef get_user_profile(user_input: str):\\n    conn = sqlite3.connect(\\\"users.db\\\")\\n    cursor = conn.cursor()\\n    # SECURE: Parameterized Query\\n    query = \\\"SELECT * FROM users WHERE username = ?\\\"\\n    cursor.execute(query, (user_input,))\\n    return cursor.fetchall()\", \"confidence_threshold\": 0.7}}"
+          "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\ndef get_user_profile_vulnerable(username):\\n    # DANGER: Directly injecting user input into the SQL string\\n    query = f\\\"SELECT * FROM users WHERE username = '{username}'\\\"\\n    \\n    conn = sqlite3.connect(\\\"database.db\\\")\\n    cursor = conn.cursor()\\n    cursor.execute(query)\\n    return cursor.fetchall()\\n\\n# If an attacker enters: admin' OR '1'='1\\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\\n# This bypasses authentication and returns all user data.\\n\", \"confidence_threshold\": 0.7}}"
         },
         {
           "role": "user",
@@ -214,15 +214,15 @@
       "error": null
     },
     {
-      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-      "event_id": "3c682cee-4185-4d2c-8eeb-578c55cfdb98",
-      "parent_event_id": "e4d38eb1-5818-407a-a4e2-883edd0b53f1",
-      "timestamp": "2026-09-18T06:56:46.809563+00:00",
+      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+      "event_id": "1e81b092-1c3f-4240-ac76-50605e87fa10",
+      "parent_event_id": "3161aad0-1460-4e33-9fbe-725bacd9dd63",
+      "timestamp": "2026-09-18T07:15:20.226751+00:00",
       "event_type": "RECOVERY",
       "input": {
         "recovered_tool": "run_sql_injection_scan",
         "corrected_arguments": {
-          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+          "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
           "confidence_threshold": 0.7
         }
       },
@@ -237,15 +237,15 @@
       "error": null
     },
     {
-      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-      "event_id": "e24e6094-95bd-4494-bcd9-adb56f826da8",
-      "parent_event_id": "3c682cee-4185-4d2c-8eeb-578c55cfdb98",
-      "timestamp": "2026-09-18T06:56:46.809575+00:00",
+      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+      "event_id": "42e280d1-5eff-416c-af2f-60fde14a8eb0",
+      "parent_event_id": "1e81b092-1c3f-4240-ac76-50605e87fa10",
+      "timestamp": "2026-09-18T07:15:20.226763+00:00",
       "event_type": "TOOL_CALL",
       "input": {
         "tool": "run_sql_injection_scan",
         "arguments": {
-          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+          "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
           "confidence_threshold": 0.7
         }
       },
@@ -258,31 +258,33 @@
       "error": null
     },
     {
-      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-      "event_id": "d021ac36-cd98-46ef-b85c-20afc6aaadc3",
-      "parent_event_id": "e24e6094-95bd-4494-bcd9-adb56f826da8",
-      "timestamp": "2026-09-18T06:56:46.809969+00:00",
+      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+      "event_id": "839f6616-3175-44ca-8884-396a79f3f431",
+      "parent_event_id": "42e280d1-5eff-416c-af2f-60fde14a8eb0",
+      "timestamp": "2026-09-18T07:15:20.227174+00:00",
       "event_type": "TOOL_RESULT",
       "input": {
-        "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+        "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
         "confidence_threshold": 0.7
       },
       "output": {
-        "vulnerable": false,
-        "details": "No direct SQL string interpolation found."
+        "vulnerable": true,
+        "vuln_type": "CWE-89: SQL Injection",
+        "details": "Unsanitized string interpolation detected in query execution: ['f\"SELECT * FROM users WHERE username = \\'{username}\\'']",
+        "severity": "CRITICAL"
       },
       "status": "SUCCESS",
-      "duration_ms": 0.3910064697265625,
+      "duration_ms": 0.4067420959472656,
       "metadata": {
-        "vulnerable": false
+        "vulnerable": true
       },
       "error": null
     },
     {
-      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-      "event_id": "cf4315fa-54d5-46a6-a642-80eed66254f1",
-      "parent_event_id": "d021ac36-cd98-46ef-b85c-20afc6aaadc3",
-      "timestamp": "2026-09-18T06:56:46.809997+00:00",
+      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+      "event_id": "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449",
+      "parent_event_id": "839f6616-3175-44ca-8884-396a79f3f431",
+      "timestamp": "2026-09-18T07:15:20.227205+00:00",
       "event_type": "LLM_CALL",
       "input": [
         {
@@ -291,7 +293,7 @@
         },
         {
           "role": "user",
-          "content": "You are VulnSentry's Security Reporting Agent.\nSynthesize the tool output into a concise, professional security finding.\n\nTool Used: run_sql_injection_scan\nTool Result: {\"vulnerable\": false, \"details\": \"No direct SQL string interpolation found.\"}\n\nOutput format must be valid JSON:\n{\n    \"vulnerability_detected\": true/false,\n    \"cwe_id\": \"CWE-XX or N/A\",\n    \"severity\": \"CRITICAL\" | \"HIGH\" | \"MEDIUM\" | \"LOW\" | \"NONE\",\n    \"title\": \"Short title\",\n    \"description\": \"Clear explanation of what was found\",\n    \"remediation\": \"How the developer can fix it\"\n}\n"
+          "content": "You are VulnSentry's Security Reporting Agent.\nSynthesize the tool output into a concise, professional security finding.\n\nTool Used: run_sql_injection_scan\nTool Result: {\"vulnerable\": true, \"vuln_type\": \"CWE-89: SQL Injection\", \"details\": \"Unsanitized string interpolation detected in query execution: ['f\\\"SELECT * FROM users WHERE username = \\\\'{username}\\\\'']\", \"severity\": \"CRITICAL\"}\n\nOutput format must be valid JSON:\n{\n    \"vulnerability_detected\": true/false,\n    \"cwe_id\": \"CWE-XX or N/A\",\n    \"severity\": \"CRITICAL\" | \"HIGH\" | \"MEDIUM\" | \"LOW\" | \"NONE\",\n    \"title\": \"Short title\",\n    \"description\": \"Clear explanation of what was found\",\n    \"remediation\": \"How the developer can fix it\"\n}\n"
         }
       ],
       "output": {
@@ -312,17 +314,17 @@
       "error": null
     },
     {
-      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-      "event_id": "72d47159-9cbf-41ec-84c7-8476f9e01c72",
-      "parent_event_id": "cf4315fa-54d5-46a6-a642-80eed66254f1",
-      "timestamp": "2026-09-18T06:56:46.810013+00:00",
+      "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+      "event_id": "5465bd6a-1f6d-4ac1-a56a-ef82a825e5d4",
+      "parent_event_id": "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449",
+      "timestamp": "2026-09-18T07:15:20.227221+00:00",
       "event_type": "FINAL_RESPONSE",
       "input": {
         "finding_title": "CWE-89: SQL Injection via Raw String Interpolation",
         "severity": "CRITICAL"
       },
       "output": {
-        "vulnerability_detected": false,
+        "vulnerability_detected": true,
         "title": "CWE-89: SQL Injection via Raw String Interpolation",
         "severity": "CRITICAL",
         "cwe_id": "CWE-89",
@@ -330,8 +332,10 @@
         "remediation": "Use parameterized queries or prepared statements instead of raw string interpolation.",
         "tool_used": "run_sql_injection_scan",
         "raw_tool_output": {
-          "vulnerable": false,
-          "details": "No direct SQL string interpolation found."
+          "vulnerable": true,
+          "vuln_type": "CWE-89: SQL Injection",
+          "details": "Unsanitized string interpolation detected in query execution: ['f\"SELECT * FROM users WHERE username = \\'{username}\\'']",
+          "severity": "CRITICAL"
         }
       },
       "status": "SUCCESS",
@@ -342,30 +346,30 @@
   ],
   "error": null,
   "dag": {
-    "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+    "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
     "nodes": [
       {
-        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-        "event_id": "6cc1d891-dac3-4daa-a9f7-530c4e5c19e7",
+        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+        "event_id": "9a41053e-f475-4b5c-a588-075ec3d58e36",
         "parent_event_id": null,
-        "timestamp": "2026-09-18T06:56:46.808979+00:00",
+        "timestamp": "2026-09-18T07:15:20.226094+00:00",
         "event_type": "CONTEXT_SELECTED",
         "input": {
           "total_turns": 7,
-          "original_token_count": 239
+          "original_token_count": 293
         },
         "output": {
           "selected_turns": 5,
-          "compressed_token_count": 208,
-          "reduction_percentage": 12.97,
+          "compressed_token_count": 262,
+          "reduction_percentage": 10.58,
           "selection_strategy": "security_aware_recency"
         },
         "status": "SUCCESS",
         "duration_ms": null,
         "metadata": {
-          "original_token_count": 239,
-          "compressed_token_count": 208,
-          "reduction_percentage": 12.97,
+          "original_token_count": 293,
+          "compressed_token_count": 262,
+          "reduction_percentage": 10.58,
           "selection_strategy": "security_aware_recency",
           "preserved_items": [
             "current_user_request",
@@ -376,28 +380,28 @@
         "error": null
       },
       {
-        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-        "event_id": "3a5b62f4-117a-427c-aa48-1f7e837deab3",
+        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+        "event_id": "be80a8d6-8d72-4c9a-95bf-c564a8a21fa7",
         "parent_event_id": null,
-        "timestamp": "2026-09-18T06:56:46.809044+00:00",
+        "timestamp": "2026-09-18T07:15:20.226153+00:00",
         "event_type": "USER_QUERY",
         "input": {
-          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()"
+          "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n"
         },
         "output": {
           "action": "security_audit",
           "trigger_demo_failure": true
         },
         "status": "SUCCESS",
-        "duration_ms": 0.0016689300537109375,
+        "duration_ms": 0,
         "metadata": {},
         "error": null
       },
       {
-        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-        "event_id": "ff0210d7-de59-433e-a0be-d96fc82b5d8e",
-        "parent_event_id": "3a5b62f4-117a-427c-aa48-1f7e837deab3",
-        "timestamp": "2026-09-18T06:56:46.809424+00:00",
+        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+        "event_id": "d4375c22-5aef-4443-8857-6691753fd23c",
+        "parent_event_id": "be80a8d6-8d72-4c9a-95bf-c564a8a21fa7",
+        "timestamp": "2026-09-18T07:15:20.226609+00:00",
         "event_type": "LLM_CALL",
         "input": [
           {
@@ -406,11 +410,11 @@
           },
           {
             "role": "user",
-            "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()"
+            "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n"
           },
           {
             "role": "assistant",
-            "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\ndef get_user_profile(user_input: str):\\n    conn = sqlite3.connect(\\\"users.db\\\")\\n    cursor = conn.cursor()\\n    # SECURE: Parameterized Query\\n    query = \\\"SELECT * FROM users WHERE username = ?\\\"\\n    cursor.execute(query, (user_input,))\\n    return cursor.fetchall()\", \"confidence_threshold\": 0.7}}"
+            "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\ndef get_user_profile_vulnerable(username):\\n    # DANGER: Directly injecting user input into the SQL string\\n    query = f\\\"SELECT * FROM users WHERE username = '{username}'\\\"\\n    \\n    conn = sqlite3.connect(\\\"database.db\\\")\\n    cursor = conn.cursor()\\n    cursor.execute(query)\\n    return cursor.fetchall()\\n\\n# If an attacker enters: admin' OR '1'='1\\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\\n# This bypasses authentication and returns all user data.\\n\", \"confidence_threshold\": 0.7}}"
           },
           {
             "role": "user",
@@ -421,7 +425,7 @@
           "thought": "Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.",
           "tool_name": "run_sql_injection_scan",
           "tool_args": {
-            "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+            "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
             "confidence_threshold": 0.7
           }
         },
@@ -435,15 +439,15 @@
         "error": null
       },
       {
-        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-        "event_id": "3529a20d-e3e9-4c56-85ce-ce6c029b4417",
-        "parent_event_id": "ff0210d7-de59-433e-a0be-d96fc82b5d8e",
-        "timestamp": "2026-09-18T06:56:46.809442+00:00",
+        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+        "event_id": "ad6f9667-b56b-4f68-81a4-20136d849f84",
+        "parent_event_id": "d4375c22-5aef-4443-8857-6691753fd23c",
+        "timestamp": "2026-09-18T07:15:20.226627+00:00",
         "event_type": "TOOL_SELECTION",
         "input": {
           "tool": "run_sql_injection_scan",
           "arguments": {
-            "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+            "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
             "confidence_threshold": 0.7,
             "force_gas": 999999
           }
@@ -457,15 +461,15 @@
         "error": null
       },
       {
-        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-        "event_id": "357d60d9-dd0d-4b07-a549-23eca1db94f9",
-        "parent_event_id": "3529a20d-e3e9-4c56-85ce-ce6c029b4417",
-        "timestamp": "2026-09-18T06:56:46.809478+00:00",
+        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+        "event_id": "4acc5129-e660-441f-87cb-9aaee05cf590",
+        "parent_event_id": "ad6f9667-b56b-4f68-81a4-20136d849f84",
+        "timestamp": "2026-09-18T07:15:20.226664+00:00",
         "event_type": "TOOL_VALIDATION",
         "input": {
           "tool": "run_sql_injection_scan",
           "arguments": {
-            "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+            "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
             "confidence_threshold": 0.7,
             "force_gas": 999999
           }
@@ -475,22 +479,22 @@
           "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
         },
         "status": "FAILURE",
-        "duration_ms": 0.0209808349609375,
+        "duration_ms": 0.024080276489257812,
         "metadata": {
           "error_type": "UNKNOWN_PARAMETER"
         },
         "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
       },
       {
-        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-        "event_id": "4efde00b-604a-4953-928c-a06435398946",
-        "parent_event_id": "357d60d9-dd0d-4b07-a549-23eca1db94f9",
-        "timestamp": "2026-09-18T06:56:46.809491+00:00",
+        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+        "event_id": "4dc349bb-7e66-4568-a7e8-fd30fa85d372",
+        "parent_event_id": "4acc5129-e660-441f-87cb-9aaee05cf590",
+        "timestamp": "2026-09-18T07:15:20.226677+00:00",
         "event_type": "FAILURE_DETECTED",
         "input": {
           "tool": "run_sql_injection_scan",
           "arguments": {
-            "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+            "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
             "confidence_threshold": 0.7,
             "force_gas": 999999
           }
@@ -507,10 +511,10 @@
         "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
       },
       {
-        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-        "event_id": "e4d38eb1-5818-407a-a4e2-883edd0b53f1",
-        "parent_event_id": "4efde00b-604a-4953-928c-a06435398946",
-        "timestamp": "2026-09-18T06:56:46.809542+00:00",
+        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+        "event_id": "3161aad0-1460-4e33-9fbe-725bacd9dd63",
+        "parent_event_id": "4dc349bb-7e66-4568-a7e8-fd30fa85d372",
+        "timestamp": "2026-09-18T07:15:20.226729+00:00",
         "event_type": "LLM_CALL",
         "input": [
           {
@@ -519,11 +523,11 @@
           },
           {
             "role": "user",
-            "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()"
+            "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n"
           },
           {
             "role": "assistant",
-            "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\ndef get_user_profile(user_input: str):\\n    conn = sqlite3.connect(\\\"users.db\\\")\\n    cursor = conn.cursor()\\n    # SECURE: Parameterized Query\\n    query = \\\"SELECT * FROM users WHERE username = ?\\\"\\n    cursor.execute(query, (user_input,))\\n    return cursor.fetchall()\", \"confidence_threshold\": 0.7}}"
+            "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\ndef get_user_profile_vulnerable(username):\\n    # DANGER: Directly injecting user input into the SQL string\\n    query = f\\\"SELECT * FROM users WHERE username = '{username}'\\\"\\n    \\n    conn = sqlite3.connect(\\\"database.db\\\")\\n    cursor = conn.cursor()\\n    cursor.execute(query)\\n    return cursor.fetchall()\\n\\n# If an attacker enters: admin' OR '1'='1\\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\\n# This bypasses authentication and returns all user data.\\n\", \"confidence_threshold\": 0.7}}"
           },
           {
             "role": "user",
@@ -548,15 +552,15 @@
         "error": null
       },
       {
-        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-        "event_id": "3c682cee-4185-4d2c-8eeb-578c55cfdb98",
-        "parent_event_id": "e4d38eb1-5818-407a-a4e2-883edd0b53f1",
-        "timestamp": "2026-09-18T06:56:46.809563+00:00",
+        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+        "event_id": "1e81b092-1c3f-4240-ac76-50605e87fa10",
+        "parent_event_id": "3161aad0-1460-4e33-9fbe-725bacd9dd63",
+        "timestamp": "2026-09-18T07:15:20.226751+00:00",
         "event_type": "RECOVERY",
         "input": {
           "recovered_tool": "run_sql_injection_scan",
           "corrected_arguments": {
-            "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+            "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
             "confidence_threshold": 0.7
           }
         },
@@ -571,15 +575,15 @@
         "error": null
       },
       {
-        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-        "event_id": "e24e6094-95bd-4494-bcd9-adb56f826da8",
-        "parent_event_id": "3c682cee-4185-4d2c-8eeb-578c55cfdb98",
-        "timestamp": "2026-09-18T06:56:46.809575+00:00",
+        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+        "event_id": "42e280d1-5eff-416c-af2f-60fde14a8eb0",
+        "parent_event_id": "1e81b092-1c3f-4240-ac76-50605e87fa10",
+        "timestamp": "2026-09-18T07:15:20.226763+00:00",
         "event_type": "TOOL_CALL",
         "input": {
           "tool": "run_sql_injection_scan",
           "arguments": {
-            "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+            "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
             "confidence_threshold": 0.7
           }
         },
@@ -592,31 +596,33 @@
         "error": null
       },
       {
-        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-        "event_id": "d021ac36-cd98-46ef-b85c-20afc6aaadc3",
-        "parent_event_id": "e24e6094-95bd-4494-bcd9-adb56f826da8",
-        "timestamp": "2026-09-18T06:56:46.809969+00:00",
+        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+        "event_id": "839f6616-3175-44ca-8884-396a79f3f431",
+        "parent_event_id": "42e280d1-5eff-416c-af2f-60fde14a8eb0",
+        "timestamp": "2026-09-18T07:15:20.227174+00:00",
         "event_type": "TOOL_RESULT",
         "input": {
-          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+          "code_snippet": "import sqlite3\n\ndef get_user_profile_vulnerable(username):\n    # DANGER: Directly injecting user input into the SQL string\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    conn = sqlite3.connect(\"database.db\")\n    cursor = conn.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n\n# If an attacker enters: admin' OR '1'='1\n# The query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'\n# This bypasses authentication and returns all user data.\n",
           "confidence_threshold": 0.7
         },
         "output": {
-          "vulnerable": false,
-          "details": "No direct SQL string interpolation found."
+          "vulnerable": true,
+          "vuln_type": "CWE-89: SQL Injection",
+          "details": "Unsanitized string interpolation detected in query execution: ['f\"SELECT * FROM users WHERE username = \\'{username}\\'']",
+          "severity": "CRITICAL"
         },
         "status": "SUCCESS",
-        "duration_ms": 0.3910064697265625,
+        "duration_ms": 0.4067420959472656,
         "metadata": {
-          "vulnerable": false
+          "vulnerable": true
         },
         "error": null
       },
       {
-        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-        "event_id": "cf4315fa-54d5-46a6-a642-80eed66254f1",
-        "parent_event_id": "d021ac36-cd98-46ef-b85c-20afc6aaadc3",
-        "timestamp": "2026-09-18T06:56:46.809997+00:00",
+        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+        "event_id": "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449",
+        "parent_event_id": "839f6616-3175-44ca-8884-396a79f3f431",
+        "timestamp": "2026-09-18T07:15:20.227205+00:00",
         "event_type": "LLM_CALL",
         "input": [
           {
@@ -625,7 +631,7 @@
           },
           {
             "role": "user",
-            "content": "You are VulnSentry's Security Reporting Agent.\nSynthesize the tool output into a concise, professional security finding.\n\nTool Used: run_sql_injection_scan\nTool Result: {\"vulnerable\": false, \"details\": \"No direct SQL string interpolation found.\"}\n\nOutput format must be valid JSON:\n{\n    \"vulnerability_detected\": true/false,\n    \"cwe_id\": \"CWE-XX or N/A\",\n    \"severity\": \"CRITICAL\" | \"HIGH\" | \"MEDIUM\" | \"LOW\" | \"NONE\",\n    \"title\": \"Short title\",\n    \"description\": \"Clear explanation of what was found\",\n    \"remediation\": \"How the developer can fix it\"\n}\n"
+            "content": "You are VulnSentry's Security Reporting Agent.\nSynthesize the tool output into a concise, professional security finding.\n\nTool Used: run_sql_injection_scan\nTool Result: {\"vulnerable\": true, \"vuln_type\": \"CWE-89: SQL Injection\", \"details\": \"Unsanitized string interpolation detected in query execution: ['f\\\"SELECT * FROM users WHERE username = \\\\'{username}\\\\'']\", \"severity\": \"CRITICAL\"}\n\nOutput format must be valid JSON:\n{\n    \"vulnerability_detected\": true/false,\n    \"cwe_id\": \"CWE-XX or N/A\",\n    \"severity\": \"CRITICAL\" | \"HIGH\" | \"MEDIUM\" | \"LOW\" | \"NONE\",\n    \"title\": \"Short title\",\n    \"description\": \"Clear explanation of what was found\",\n    \"remediation\": \"How the developer can fix it\"\n}\n"
           }
         ],
         "output": {
@@ -646,17 +652,17 @@
         "error": null
       },
       {
-        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
-        "event_id": "72d47159-9cbf-41ec-84c7-8476f9e01c72",
-        "parent_event_id": "cf4315fa-54d5-46a6-a642-80eed66254f1",
-        "timestamp": "2026-09-18T06:56:46.810013+00:00",
+        "run_id": "a7dad72c-e419-4459-88a2-4e3e4e87be93",
+        "event_id": "5465bd6a-1f6d-4ac1-a56a-ef82a825e5d4",
+        "parent_event_id": "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449",
+        "timestamp": "2026-09-18T07:15:20.227221+00:00",
         "event_type": "FINAL_RESPONSE",
         "input": {
           "finding_title": "CWE-89: SQL Injection via Raw String Interpolation",
           "severity": "CRITICAL"
         },
         "output": {
-          "vulnerability_detected": false,
+          "vulnerability_detected": true,
           "title": "CWE-89: SQL Injection via Raw String Interpolation",
           "severity": "CRITICAL",
           "cwe_id": "CWE-89",
@@ -664,8 +670,10 @@
           "remediation": "Use parameterized queries or prepared statements instead of raw string interpolation.",
           "tool_used": "run_sql_injection_scan",
           "raw_tool_output": {
-            "vulnerable": false,
-            "details": "No direct SQL string interpolation found."
+            "vulnerable": true,
+            "vuln_type": "CWE-89: SQL Injection",
+            "details": "Unsanitized string interpolation detected in query execution: ['f\"SELECT * FROM users WHERE username = \\'{username}\\'']",
+            "severity": "CRITICAL"
           }
         },
         "status": "SUCCESS",
@@ -676,83 +684,83 @@
     ],
     "edges": [
       {
-        "source": "3a5b62f4-117a-427c-aa48-1f7e837deab3",
-        "target": "ff0210d7-de59-433e-a0be-d96fc82b5d8e"
+        "source": "be80a8d6-8d72-4c9a-95bf-c564a8a21fa7",
+        "target": "d4375c22-5aef-4443-8857-6691753fd23c"
       },
       {
-        "source": "ff0210d7-de59-433e-a0be-d96fc82b5d8e",
-        "target": "3529a20d-e3e9-4c56-85ce-ce6c029b4417"
+        "source": "d4375c22-5aef-4443-8857-6691753fd23c",
+        "target": "ad6f9667-b56b-4f68-81a4-20136d849f84"
       },
       {
-        "source": "3529a20d-e3e9-4c56-85ce-ce6c029b4417",
-        "target": "357d60d9-dd0d-4b07-a549-23eca1db94f9"
+        "source": "ad6f9667-b56b-4f68-81a4-20136d849f84",
+        "target": "4acc5129-e660-441f-87cb-9aaee05cf590"
       },
       {
-        "source": "357d60d9-dd0d-4b07-a549-23eca1db94f9",
-        "target": "4efde00b-604a-4953-928c-a06435398946"
+        "source": "4acc5129-e660-441f-87cb-9aaee05cf590",
+        "target": "4dc349bb-7e66-4568-a7e8-fd30fa85d372"
       },
       {
-        "source": "4efde00b-604a-4953-928c-a06435398946",
-        "target": "e4d38eb1-5818-407a-a4e2-883edd0b53f1"
+        "source": "4dc349bb-7e66-4568-a7e8-fd30fa85d372",
+        "target": "3161aad0-1460-4e33-9fbe-725bacd9dd63"
       },
       {
-        "source": "e4d38eb1-5818-407a-a4e2-883edd0b53f1",
-        "target": "3c682cee-4185-4d2c-8eeb-578c55cfdb98"
+        "source": "3161aad0-1460-4e33-9fbe-725bacd9dd63",
+        "target": "1e81b092-1c3f-4240-ac76-50605e87fa10"
       },
       {
-        "source": "3c682cee-4185-4d2c-8eeb-578c55cfdb98",
-        "target": "e24e6094-95bd-4494-bcd9-adb56f826da8"
+        "source": "1e81b092-1c3f-4240-ac76-50605e87fa10",
+        "target": "42e280d1-5eff-416c-af2f-60fde14a8eb0"
       },
       {
-        "source": "e24e6094-95bd-4494-bcd9-adb56f826da8",
-        "target": "d021ac36-cd98-46ef-b85c-20afc6aaadc3"
+        "source": "42e280d1-5eff-416c-af2f-60fde14a8eb0",
+        "target": "839f6616-3175-44ca-8884-396a79f3f431"
       },
       {
-        "source": "d021ac36-cd98-46ef-b85c-20afc6aaadc3",
-        "target": "cf4315fa-54d5-46a6-a642-80eed66254f1"
+        "source": "839f6616-3175-44ca-8884-396a79f3f431",
+        "target": "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449"
       },
       {
-        "source": "cf4315fa-54d5-46a6-a642-80eed66254f1",
-        "target": "72d47159-9cbf-41ec-84c7-8476f9e01c72"
+        "source": "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449",
+        "target": "5465bd6a-1f6d-4ac1-a56a-ef82a825e5d4"
       }
     ],
     "adjacency_list": {
-      "6cc1d891-dac3-4daa-a9f7-530c4e5c19e7": [],
-      "3a5b62f4-117a-427c-aa48-1f7e837deab3": [
-        "ff0210d7-de59-433e-a0be-d96fc82b5d8e"
+      "9a41053e-f475-4b5c-a588-075ec3d58e36": [],
+      "be80a8d6-8d72-4c9a-95bf-c564a8a21fa7": [
+        "d4375c22-5aef-4443-8857-6691753fd23c"
       ],
-      "ff0210d7-de59-433e-a0be-d96fc82b5d8e": [
-        "3529a20d-e3e9-4c56-85ce-ce6c029b4417"
+      "d4375c22-5aef-4443-8857-6691753fd23c": [
+        "ad6f9667-b56b-4f68-81a4-20136d849f84"
       ],
-      "3529a20d-e3e9-4c56-85ce-ce6c029b4417": [
-        "357d60d9-dd0d-4b07-a549-23eca1db94f9"
+      "ad6f9667-b56b-4f68-81a4-20136d849f84": [
+        "4acc5129-e660-441f-87cb-9aaee05cf590"
       ],
-      "357d60d9-dd0d-4b07-a549-23eca1db94f9": [
-        "4efde00b-604a-4953-928c-a06435398946"
+      "4acc5129-e660-441f-87cb-9aaee05cf590": [
+        "4dc349bb-7e66-4568-a7e8-fd30fa85d372"
       ],
-      "4efde00b-604a-4953-928c-a06435398946": [
-        "e4d38eb1-5818-407a-a4e2-883edd0b53f1"
+      "4dc349bb-7e66-4568-a7e8-fd30fa85d372": [
+        "3161aad0-1460-4e33-9fbe-725bacd9dd63"
       ],
-      "e4d38eb1-5818-407a-a4e2-883edd0b53f1": [
-        "3c682cee-4185-4d2c-8eeb-578c55cfdb98"
+      "3161aad0-1460-4e33-9fbe-725bacd9dd63": [
+        "1e81b092-1c3f-4240-ac76-50605e87fa10"
       ],
-      "3c682cee-4185-4d2c-8eeb-578c55cfdb98": [
-        "e24e6094-95bd-4494-bcd9-adb56f826da8"
+      "1e81b092-1c3f-4240-ac76-50605e87fa10": [
+        "42e280d1-5eff-416c-af2f-60fde14a8eb0"
       ],
-      "e24e6094-95bd-4494-bcd9-adb56f826da8": [
-        "d021ac36-cd98-46ef-b85c-20afc6aaadc3"
+      "42e280d1-5eff-416c-af2f-60fde14a8eb0": [
+        "839f6616-3175-44ca-8884-396a79f3f431"
       ],
-      "d021ac36-cd98-46ef-b85c-20afc6aaadc3": [
-        "cf4315fa-54d5-46a6-a642-80eed66254f1"
+      "839f6616-3175-44ca-8884-396a79f3f431": [
+        "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449"
       ],
-      "cf4315fa-54d5-46a6-a642-80eed66254f1": [
-        "72d47159-9cbf-41ec-84c7-8476f9e01c72"
+      "7f43aaf1-bcee-47f8-b8bf-0a8f8ddb9449": [
+        "5465bd6a-1f6d-4ac1-a56a-ef82a825e5d4"
       ],
-      "72d47159-9cbf-41ec-84c7-8476f9e01c72": []
+      "5465bd6a-1f6d-4ac1-a56a-ef82a825e5d4": []
     },
     "root_event_ids": [
-      "6cc1d891-dac3-4daa-a9f7-530c4e5c19e7",
-      "3a5b62f4-117a-427c-aa48-1f7e837deab3"
+      "9a41053e-f475-4b5c-a588-075ec3d58e36",
+      "be80a8d6-8d72-4c9a-95bf-c564a8a21fa7"
     ]
   }
 }

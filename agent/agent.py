@@ -220,7 +220,11 @@ class SecurityAgent:
         if self.mock_mode:
             duration_ms = max(5.0, (time.time() - t0) * 1000)
             parsed = self._simulate_llm_response(messages)
-            tokens = {"input_tokens": 150, "output_tokens": 60}
+            in_chars = sum(len(str(m.get("content", ""))) for m in messages)
+            in_tokens = max(20, int(round(in_chars / 4.0)))
+            out_chars = len(json.dumps(parsed))
+            out_tokens = max(15, int(round(out_chars / 4.0)))
+            tokens = {"input_tokens": in_tokens, "output_tokens": out_tokens}
         else:
             try:
                 response = self.client.chat.completions.create(

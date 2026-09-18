@@ -3,7 +3,8 @@
 import React from "react";
 
 interface AvatarProps {
-  type: "orchestrator" | "shield" | "healer" | "context" | "tracer" | "user";
+  type: "orchestrator" | "shield" | "healer" | "context" | "tracer" | "user" | "datadog" | "pentester" | "architect" | "compliance" | "custom";
+  label?: string;
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
   showStatus?: boolean;
@@ -11,6 +12,7 @@ interface AvatarProps {
 
 export default function AgentAvatar({
   type,
+  label,
   size = "md",
   className = "",
   showStatus = true,
@@ -146,7 +148,97 @@ export default function AgentAvatar({
         </div>
       );
 
+    case "datadog":
+      return (
+        <div className={`relative shrink-0 ${sizeClasses[size]} ${className}`}>
+          <div className="w-full h-full rounded-2xl bg-gradient-to-br from-[#7733cc] via-[#632ca6] to-[#431b75] p-0.5 shadow-md shadow-purple-900/30 flex items-center justify-center">
+            <div className="w-full h-full rounded-[14px] bg-[#1f0d36] flex items-center justify-center overflow-hidden relative">
+              {/* Datadog Dog / Shield APM silhouette */}
+              <svg className="w-3/4 h-3/4 text-purple-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M12 2C8 2 4 5 4 10c0 4.5 3 8 8 12 5-4 8-7.5 8-12 0-5-4-8-8-8z" fill="#3b1763" fillOpacity="0.6" stroke="#a855f7" />
+                <path d="M9 10a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM15 10a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" fill="#e9d5ff" />
+                <path d="M12 13v3M10 16h4" stroke="#c084fc" strokeLinecap="round" />
+                <circle cx="12" cy="12" r="7.5" stroke="#a855f7" strokeDasharray="1.5 2" />
+              </svg>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#632ca6]/30 to-transparent pointer-events-none"></div>
+            </div>
+          </div>
+          {showStatus && (
+            <span className={`absolute ${statusDotSizes[size]} rounded-full bg-[#a855f7] ring-2 ring-white animate-pulse`}></span>
+          )}
+        </div>
+      );
+
+    case "pentester":
+      return (
+        <div className={`relative shrink-0 ${sizeClasses[size]} ${className}`}>
+          <div className="w-full h-full rounded-2xl bg-gradient-to-br from-rose-500 via-red-600 to-rose-900 p-0.5 shadow-md shadow-rose-500/20 flex items-center justify-center">
+            <div className="w-full h-full rounded-[14px] bg-[#2a060e] flex items-center justify-center overflow-hidden relative">
+              <svg className="w-3/4 h-3/4 text-rose-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" />
+                <path d="M12 3v18M3 12h18" stroke="currentColor" strokeLinecap="round" />
+                <circle cx="12" cy="12" r="3" fill="#f43f5e" fillOpacity="0.6" />
+              </svg>
+              <div className="absolute inset-0 bg-gradient-to-t from-rose-500/20 to-transparent pointer-events-none"></div>
+            </div>
+          </div>
+          {showStatus && (
+            <span className={`absolute ${statusDotSizes[size]} rounded-full bg-rose-500 ring-2 ring-white`}></span>
+          )}
+        </div>
+      );
+
+    case "architect":
+      return (
+        <div className={`relative shrink-0 ${sizeClasses[size]} ${className}`}>
+          <div className="w-full h-full rounded-2xl bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-700 p-0.5 shadow-md shadow-blue-500/20 flex items-center justify-center">
+            <div className="w-full h-full rounded-[14px] bg-[#081838] flex items-center justify-center overflow-hidden relative">
+              <svg className="w-3/4 h-3/4 text-sky-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M19 16.9A5 5 0 0018 7h-1.26a8 8 0 10-11.62 9" stroke="currentColor" strokeLinecap="round" />
+                <path d="M12 12v6M9 15h6" stroke="#38bdf8" strokeLinecap="round" />
+              </svg>
+              <div className="absolute inset-0 bg-gradient-to-t from-sky-400/20 to-transparent pointer-events-none"></div>
+            </div>
+          </div>
+          {showStatus && (
+            <span className={`absolute ${statusDotSizes[size]} rounded-full bg-sky-400 ring-2 ring-white`}></span>
+          )}
+        </div>
+      );
+
+    case "compliance":
+      return (
+        <div className={`relative shrink-0 ${sizeClasses[size]} ${className}`}>
+          <div className="w-full h-full rounded-2xl bg-gradient-to-br from-teal-400 via-emerald-600 to-teal-800 p-0.5 shadow-md shadow-emerald-500/20 flex items-center justify-center">
+            <div className="w-full h-full rounded-[14px] bg-[#03231c] flex items-center justify-center overflow-hidden relative">
+              <svg className="w-3/4 h-3/4 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M9 11l3 3L22 4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" strokeLinecap="round" />
+              </svg>
+              <div className="absolute inset-0 bg-gradient-to-t from-emerald-400/20 to-transparent pointer-events-none"></div>
+            </div>
+          </div>
+          {showStatus && (
+            <span className={`absolute ${statusDotSizes[size]} rounded-full bg-emerald-400 ring-2 ring-white`}></span>
+          )}
+        </div>
+      );
+
+    case "custom":
     default:
-      return null;
+      const initials = (label || "AI").slice(0, 2).toUpperCase();
+      return (
+        <div className={`relative shrink-0 ${sizeClasses[size]} ${className}`}>
+          <div className="w-full h-full rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 p-0.5 shadow-md shadow-purple-500/20 flex items-center justify-center">
+            <div className="w-full h-full rounded-[14px] bg-[#1a0f2e] flex items-center justify-center overflow-hidden relative">
+              <span className="text-white font-bold text-xs font-mono">{initials}</span>
+              <div className="absolute inset-0 bg-gradient-to-t from-purple-500/20 to-transparent pointer-events-none"></div>
+            </div>
+          </div>
+          {showStatus && (
+            <span className={`absolute ${statusDotSizes[size]} rounded-full bg-pink-500 ring-2 ring-white`}></span>
+          )}
+        </div>
+      );
   }
 }
