@@ -1,38 +1,69 @@
 {
-  "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
+  "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
   "status": "COMPLETED",
-  "start_time": "2026-09-18T05:57:49.764695+00:00",
-  "end_time": "2026-09-18T05:57:49.766652+00:00",
+  "start_time": "2026-09-18T06:56:46.808576+00:00",
+  "end_time": "2026-09-18T06:56:46.810020+00:00",
   "metadata": {
     "scanner": "VulnSentry",
     "version": "1.0",
-    "auditor": "Akash",
-    "environment": "integration_audit"
+    "mode": "realtime_interactive",
+    "trigger_demo_failure": true
   },
   "events": [
     {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "b06b110c-a0df-46dd-88fc-d8cb8ffe96c8",
+      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+      "event_id": "6cc1d891-dac3-4daa-a9f7-530c4e5c19e7",
       "parent_event_id": null,
-      "timestamp": "2026-09-18T05:57:49.765285+00:00",
+      "timestamp": "2026-09-18T06:56:46.808979+00:00",
+      "event_type": "CONTEXT_SELECTED",
+      "input": {
+        "total_turns": 7,
+        "original_token_count": 239
+      },
+      "output": {
+        "selected_turns": 5,
+        "compressed_token_count": 208,
+        "reduction_percentage": 12.97,
+        "selection_strategy": "security_aware_recency"
+      },
+      "status": "SUCCESS",
+      "duration_ms": null,
+      "metadata": {
+        "original_token_count": 239,
+        "compressed_token_count": 208,
+        "reduction_percentage": 12.97,
+        "selection_strategy": "security_aware_recency",
+        "preserved_items": [
+          "current_user_request",
+          "recent_turns_window:4",
+          "compressed_historical_turns:3"
+        ]
+      },
+      "error": null
+    },
+    {
+      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+      "event_id": "3a5b62f4-117a-427c-aa48-1f7e837deab3",
+      "parent_event_id": null,
+      "timestamp": "2026-09-18T06:56:46.809044+00:00",
       "event_type": "USER_QUERY",
       "input": {
-        "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()"
+        "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()"
       },
       "output": {
         "action": "security_audit",
-        "trigger_demo_failure": false
+        "trigger_demo_failure": true
       },
       "status": "SUCCESS",
-      "duration_ms": 0.0,
+      "duration_ms": 0.0016689300537109375,
       "metadata": {},
       "error": null
     },
     {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "bfc59a33-5333-4554-aae8-6b966560c768",
-      "parent_event_id": "b06b110c-a0df-46dd-88fc-d8cb8ffe96c8",
-      "timestamp": "2026-09-18T05:57:49.765744+00:00",
+      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+      "event_id": "ff0210d7-de59-433e-a0be-d96fc82b5d8e",
+      "parent_event_id": "3a5b62f4-117a-427c-aa48-1f7e837deab3",
+      "timestamp": "2026-09-18T06:56:46.809424+00:00",
       "event_type": "LLM_CALL",
       "input": [
         {
@@ -41,19 +72,27 @@
         },
         {
           "role": "user",
-          "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()"
+          "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\ndef get_user_profile(user_input: str):\\n    conn = sqlite3.connect(\\\"users.db\\\")\\n    cursor = conn.cursor()\\n    # SECURE: Parameterized Query\\n    query = \\\"SELECT * FROM users WHERE username = ?\\\"\\n    cursor.execute(query, (user_input,))\\n    return cursor.fetchall()\", \"confidence_threshold\": 0.7}}"
+        },
+        {
+          "role": "user",
+          "content": "[CRITICAL: TOOL VALIDATION ERROR]\nYour previous tool invocation was BLOCKED by the GlassBox Tool Validator.\nReason: Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold'].\n\nFix your parameters to strictly match the allowed schema and retry.\nReturn ONLY valid JSON with no markdown formatting.\n"
         }
       ],
       "output": {
         "thought": "Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.",
         "tool_name": "run_sql_injection_scan",
         "tool_args": {
-          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
           "confidence_threshold": 0.7
         }
       },
       "status": "SUCCESS",
-      "duration_ms": 5.0,
+      "duration_ms": 5,
       "metadata": {
         "model": "gpt-4o-mini",
         "input_tokens": 150,
@@ -62,16 +101,17 @@
       "error": null
     },
     {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "2db435cf-69b3-406e-8df1-62c0dfc50e5d",
-      "parent_event_id": "bfc59a33-5333-4554-aae8-6b966560c768",
-      "timestamp": "2026-09-18T05:57:49.765763+00:00",
+      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+      "event_id": "3529a20d-e3e9-4c56-85ce-ce6c029b4417",
+      "parent_event_id": "ff0210d7-de59-433e-a0be-d96fc82b5d8e",
+      "timestamp": "2026-09-18T06:56:46.809442+00:00",
       "event_type": "TOOL_SELECTION",
       "input": {
         "tool": "run_sql_injection_scan",
         "arguments": {
-          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
-          "confidence_threshold": 0.7
+          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+          "confidence_threshold": 0.7,
+          "force_gas": 999999
         }
       },
       "output": {
@@ -83,225 +123,15 @@
       "error": null
     },
     {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "4aa6cfcb-7458-4165-94c4-4dab281ab9e9",
-      "parent_event_id": "2db435cf-69b3-406e-8df1-62c0dfc50e5d",
-      "timestamp": "2026-09-18T05:57:49.765795+00:00",
+      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+      "event_id": "357d60d9-dd0d-4b07-a549-23eca1db94f9",
+      "parent_event_id": "3529a20d-e3e9-4c56-85ce-ce6c029b4417",
+      "timestamp": "2026-09-18T06:56:46.809478+00:00",
       "event_type": "TOOL_VALIDATION",
       "input": {
         "tool": "run_sql_injection_scan",
         "arguments": {
-          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
-          "confidence_threshold": 0.7
-        }
-      },
-      "output": {
-        "is_valid": true,
-        "error": null
-      },
-      "status": "SUCCESS",
-      "duration_ms": 0.016927719116210938,
-      "metadata": {},
-      "error": null
-    },
-    {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "450a2b77-4e30-4d5d-a3cc-85c5f5ca98ea",
-      "parent_event_id": "4aa6cfcb-7458-4165-94c4-4dab281ab9e9",
-      "timestamp": "2026-09-18T05:57:49.765809+00:00",
-      "event_type": "TOOL_CALL",
-      "input": {
-        "tool": "run_sql_injection_scan",
-        "arguments": {
-          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
-          "confidence_threshold": 0.7
-        }
-      },
-      "output": {
-        "status": "executing"
-      },
-      "status": "SUCCESS",
-      "duration_ms": null,
-      "metadata": {},
-      "error": null
-    },
-    {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "73395049-cda5-4a58-bf04-4405f0efb49a",
-      "parent_event_id": "450a2b77-4e30-4d5d-a3cc-85c5f5ca98ea",
-      "timestamp": "2026-09-18T05:57:49.766221+00:00",
-      "event_type": "TOOL_RESULT",
-      "input": {
-        "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
-        "confidence_threshold": 0.7
-      },
-      "output": {
-        "vulnerable": true,
-        "vuln_type": "CWE-89: SQL Injection",
-        "details": "Unsanitized string interpolation detected in query execution: ['f\"SELECT * FROM users WHERE username = \\'{user_input}\\'']",
-        "severity": "CRITICAL"
-      },
-      "status": "SUCCESS",
-      "duration_ms": 0.40912628173828125,
-      "metadata": {
-        "vulnerable": true
-      },
-      "error": null
-    },
-    {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "2d2c0770-5515-40e0-85a3-6110b3ee9379",
-      "parent_event_id": "73395049-cda5-4a58-bf04-4405f0efb49a",
-      "timestamp": "2026-09-18T05:57:49.766266+00:00",
-      "event_type": "LLM_CALL",
-      "input": [
-        {
-          "role": "system",
-          "content": "You are a professional security report generator."
-        },
-        {
-          "role": "user",
-          "content": "You are VulnSentry's Security Reporting Agent.\nSynthesize the tool output into a concise, professional security finding.\n\nTool Used: run_sql_injection_scan\nTool Result: {\"vulnerable\": true, \"vuln_type\": \"CWE-89: SQL Injection\", \"details\": \"Unsanitized string interpolation detected in query execution: ['f\\\"SELECT * FROM users WHERE username = \\\\'{user_input}\\\\'']\", \"severity\": \"CRITICAL\"}\n\nOutput format must be valid JSON:\n{\n    \"vulnerability_detected\": true/false,\n    \"cwe_id\": \"CWE-XX or N/A\",\n    \"severity\": \"CRITICAL\" | \"HIGH\" | \"MEDIUM\" | \"LOW\" | \"NONE\",\n    \"title\": \"Short title\",\n    \"description\": \"Clear explanation of what was found\",\n    \"remediation\": \"How the developer can fix it\"\n}\n"
-        }
-      ],
-      "output": {
-        "vulnerability_detected": true,
-        "cwe_id": "CWE-89",
-        "severity": "CRITICAL",
-        "title": "CWE-89: SQL Injection via Raw String Interpolation",
-        "description": "Unsanitized string interpolation detected in SQL query execution allowing raw injection.",
-        "remediation": "Use parameterized queries or prepared statements instead of raw string interpolation."
-      },
-      "status": "SUCCESS",
-      "duration_ms": 5.0,
-      "metadata": {
-        "model": "gpt-4o-mini",
-        "input_tokens": 150,
-        "output_tokens": 60
-      },
-      "error": null
-    },
-    {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "42fae928-8182-46fd-9f87-670349462cf4",
-      "parent_event_id": "2d2c0770-5515-40e0-85a3-6110b3ee9379",
-      "timestamp": "2026-09-18T05:57:49.766283+00:00",
-      "event_type": "FINAL_RESPONSE",
-      "input": {
-        "finding_title": "CWE-89: SQL Injection via Raw String Interpolation",
-        "severity": "CRITICAL"
-      },
-      "output": {
-        "vulnerability_detected": true,
-        "title": "CWE-89: SQL Injection via Raw String Interpolation",
-        "severity": "CRITICAL",
-        "cwe_id": "CWE-89",
-        "description": "Unsanitized string interpolation detected in SQL query execution allowing raw injection.",
-        "remediation": "Use parameterized queries or prepared statements instead of raw string interpolation.",
-        "tool_used": "run_sql_injection_scan",
-        "raw_tool_output": {
-          "vulnerable": true,
-          "vuln_type": "CWE-89: SQL Injection",
-          "details": "Unsanitized string interpolation detected in query execution: ['f\"SELECT * FROM users WHERE username = \\'{user_input}\\'']",
-          "severity": "CRITICAL"
-        }
-      },
-      "status": "SUCCESS",
-      "duration_ms": null,
-      "metadata": {},
-      "error": null
-    },
-    {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "7b172197-2737-4d88-8687-084307c640b7",
-      "parent_event_id": null,
-      "timestamp": "2026-09-18T05:57:49.766337+00:00",
-      "event_type": "USER_QUERY",
-      "input": {
-        "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()"
-      },
-      "output": {
-        "action": "security_audit",
-        "trigger_demo_failure": true
-      },
-      "status": "SUCCESS",
-      "duration_ms": 0.0,
-      "metadata": {},
-      "error": null
-    },
-    {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "26358987-7e25-48d5-bb63-10b7b13823f8",
-      "parent_event_id": "7b172197-2737-4d88-8687-084307c640b7",
-      "timestamp": "2026-09-18T05:57:49.766366+00:00",
-      "event_type": "LLM_CALL",
-      "input": [
-        {
-          "role": "system",
-          "content": "You are VulnSentry's Security Analysis Agent.\nYour task is to inspect the provided source code, identify potential security risks, and select the appropriate tool to verify them.\n\nAvailable Tools:\n1. run_sql_injection_scan(code_snippet: str, confidence_threshold: float)\n   - Use this to check for SQL string interpolation, raw query concatenation, or unsanitized queries.\n2. run_secret_leak_scan(code_snippet: str)\n   - Use this to detect hardcoded API keys, passwords, and private secrets.\n\nOUTPUT REQUIREMENT:\nYou must respond ONLY with a single valid JSON object. Do not include markdown fences, comments, or explanations outside the JSON.\n\nExpected JSON Format:\n{\n    \"thought\": \"Brief reason for selecting this tool\",\n    \"tool_name\": \"run_sql_injection_scan\" | \"run_secret_leak_scan\",\n    \"tool_args\": {\n        \"code_snippet\": \"<the code to analyze>\",\n        \"confidence_threshold\": 0.7\n    }\n}\n"
-        },
-        {
-          "role": "user",
-          "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()"
-        },
-        {
-          "role": "assistant",
-          "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\nAWS_SECRET_KEY = \\\"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\\\"\\n\\ndef get_user_profile(user_input: str):\\n    conn = sqlite3.connect(\\\"users.db\\\")\\n    cursor = conn.cursor()\\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\\n    query = f\\\"SELECT * FROM users WHERE username = '{user_input}'\\\"\\n    cursor.execute(query)\\n    return cursor.fetchall()\", \"confidence_threshold\": 0.7}}"
-        },
-        {
-          "role": "user",
-          "content": "[CRITICAL: TOOL VALIDATION ERROR]\nYour previous tool invocation was BLOCKED by the GlassBox Tool Validator.\nReason: Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold'].\n\nFix your parameters to strictly match the allowed schema and retry.\nReturn ONLY valid JSON with no markdown formatting.\n"
-        }
-      ],
-      "output": {
-        "thought": "Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.",
-        "tool_name": "run_sql_injection_scan",
-        "tool_args": {
-          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
-          "confidence_threshold": 0.7
-        }
-      },
-      "status": "SUCCESS",
-      "duration_ms": 5.0,
-      "metadata": {
-        "model": "gpt-4o-mini",
-        "input_tokens": 150,
-        "output_tokens": 60
-      },
-      "error": null
-    },
-    {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "b851b77c-d174-455d-a164-37a4c8a67305",
-      "parent_event_id": "26358987-7e25-48d5-bb63-10b7b13823f8",
-      "timestamp": "2026-09-18T05:57:49.766381+00:00",
-      "event_type": "TOOL_SELECTION",
-      "input": {
-        "tool": "run_sql_injection_scan",
-        "arguments": {
-          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
-          "confidence_threshold": 0.7,
-          "force_gas": 999999
-        }
-      },
-      "output": {
-        "candidate_selected": "run_sql_injection_scan"
-      },
-      "status": "SUCCESS",
-      "duration_ms": 0.0,
-      "metadata": {},
-      "error": null
-    },
-    {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "57982c26-447b-43cb-8cf4-6bc1b6f901a9",
-      "parent_event_id": "b851b77c-d174-455d-a164-37a4c8a67305",
-      "timestamp": "2026-09-18T05:57:49.766410+00:00",
-      "event_type": "TOOL_VALIDATION",
-      "input": {
-        "tool": "run_sql_injection_scan",
-        "arguments": {
-          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
           "confidence_threshold": 0.7,
           "force_gas": 999999
         }
@@ -311,22 +141,22 @@
         "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
       },
       "status": "FAILURE",
-      "duration_ms": 0.0171661376953125,
+      "duration_ms": 0.0209808349609375,
       "metadata": {
         "error_type": "UNKNOWN_PARAMETER"
       },
       "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
     },
     {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "86f8e4b4-ae90-40f6-93ee-7ff25bd5b24d",
-      "parent_event_id": "57982c26-447b-43cb-8cf4-6bc1b6f901a9",
-      "timestamp": "2026-09-18T05:57:49.766423+00:00",
+      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+      "event_id": "4efde00b-604a-4953-928c-a06435398946",
+      "parent_event_id": "357d60d9-dd0d-4b07-a549-23eca1db94f9",
+      "timestamp": "2026-09-18T06:56:46.809491+00:00",
       "event_type": "FAILURE_DETECTED",
       "input": {
         "tool": "run_sql_injection_scan",
         "arguments": {
-          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
           "confidence_threshold": 0.7,
           "force_gas": 999999
         }
@@ -343,10 +173,10 @@
       "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
     },
     {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "a5c94490-ba99-4f50-a49e-f89d9fe8d10f",
-      "parent_event_id": "86f8e4b4-ae90-40f6-93ee-7ff25bd5b24d",
-      "timestamp": "2026-09-18T05:57:49.766535+00:00",
+      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+      "event_id": "e4d38eb1-5818-407a-a4e2-883edd0b53f1",
+      "parent_event_id": "4efde00b-604a-4953-928c-a06435398946",
+      "timestamp": "2026-09-18T06:56:46.809542+00:00",
       "event_type": "LLM_CALL",
       "input": [
         {
@@ -355,11 +185,11 @@
         },
         {
           "role": "user",
-          "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()"
+          "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()"
         },
         {
           "role": "assistant",
-          "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\nAWS_SECRET_KEY = \\\"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\\\"\\n\\ndef get_user_profile(user_input: str):\\n    conn = sqlite3.connect(\\\"users.db\\\")\\n    cursor = conn.cursor()\\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\\n    query = f\\\"SELECT * FROM users WHERE username = '{user_input}'\\\"\\n    cursor.execute(query)\\n    return cursor.fetchall()\", \"confidence_threshold\": 0.7}}"
+          "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\ndef get_user_profile(user_input: str):\\n    conn = sqlite3.connect(\\\"users.db\\\")\\n    cursor = conn.cursor()\\n    # SECURE: Parameterized Query\\n    query = \\\"SELECT * FROM users WHERE username = ?\\\"\\n    cursor.execute(query, (user_input,))\\n    return cursor.fetchall()\", \"confidence_threshold\": 0.7}}"
         },
         {
           "role": "user",
@@ -375,7 +205,7 @@
         }
       },
       "status": "SUCCESS",
-      "duration_ms": 5.0,
+      "duration_ms": 5,
       "metadata": {
         "model": "gpt-4o-mini",
         "input_tokens": 150,
@@ -384,15 +214,15 @@
       "error": null
     },
     {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "c11124ad-c869-4107-ad07-0771c27523de",
-      "parent_event_id": "a5c94490-ba99-4f50-a49e-f89d9fe8d10f",
-      "timestamp": "2026-09-18T05:57:49.766557+00:00",
+      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+      "event_id": "3c682cee-4185-4d2c-8eeb-578c55cfdb98",
+      "parent_event_id": "e4d38eb1-5818-407a-a4e2-883edd0b53f1",
+      "timestamp": "2026-09-18T06:56:46.809563+00:00",
       "event_type": "RECOVERY",
       "input": {
         "recovered_tool": "run_sql_injection_scan",
         "corrected_arguments": {
-          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
           "confidence_threshold": 0.7
         }
       },
@@ -407,15 +237,15 @@
       "error": null
     },
     {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "113d2f9e-7e09-4406-9147-db78802f7c3a",
-      "parent_event_id": "c11124ad-c869-4107-ad07-0771c27523de",
-      "timestamp": "2026-09-18T05:57:49.766569+00:00",
+      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+      "event_id": "e24e6094-95bd-4494-bcd9-adb56f826da8",
+      "parent_event_id": "3c682cee-4185-4d2c-8eeb-578c55cfdb98",
+      "timestamp": "2026-09-18T06:56:46.809575+00:00",
       "event_type": "TOOL_CALL",
       "input": {
         "tool": "run_sql_injection_scan",
         "arguments": {
-          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
           "confidence_threshold": 0.7
         }
       },
@@ -428,33 +258,31 @@
       "error": null
     },
     {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "f5f79f7d-a309-4abe-bf44-3ef2ff54874b",
-      "parent_event_id": "113d2f9e-7e09-4406-9147-db78802f7c3a",
-      "timestamp": "2026-09-18T05:57:49.766588+00:00",
+      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+      "event_id": "d021ac36-cd98-46ef-b85c-20afc6aaadc3",
+      "parent_event_id": "e24e6094-95bd-4494-bcd9-adb56f826da8",
+      "timestamp": "2026-09-18T06:56:46.809969+00:00",
       "event_type": "TOOL_RESULT",
       "input": {
-        "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+        "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
         "confidence_threshold": 0.7
       },
       "output": {
-        "vulnerable": true,
-        "vuln_type": "CWE-89: SQL Injection",
-        "details": "Unsanitized string interpolation detected in query execution: ['f\"SELECT * FROM users WHERE username = \\'{user_input}\\'']",
-        "severity": "CRITICAL"
+        "vulnerable": false,
+        "details": "No direct SQL string interpolation found."
       },
       "status": "SUCCESS",
-      "duration_ms": 0.018835067749023438,
+      "duration_ms": 0.3910064697265625,
       "metadata": {
-        "vulnerable": true
+        "vulnerable": false
       },
       "error": null
     },
     {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "41189a4b-8917-449d-ad8f-363973846238",
-      "parent_event_id": "f5f79f7d-a309-4abe-bf44-3ef2ff54874b",
-      "timestamp": "2026-09-18T05:57:49.766611+00:00",
+      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+      "event_id": "cf4315fa-54d5-46a6-a642-80eed66254f1",
+      "parent_event_id": "d021ac36-cd98-46ef-b85c-20afc6aaadc3",
+      "timestamp": "2026-09-18T06:56:46.809997+00:00",
       "event_type": "LLM_CALL",
       "input": [
         {
@@ -463,7 +291,7 @@
         },
         {
           "role": "user",
-          "content": "You are VulnSentry's Security Reporting Agent.\nSynthesize the tool output into a concise, professional security finding.\n\nTool Used: run_sql_injection_scan\nTool Result: {\"vulnerable\": true, \"vuln_type\": \"CWE-89: SQL Injection\", \"details\": \"Unsanitized string interpolation detected in query execution: ['f\\\"SELECT * FROM users WHERE username = \\\\'{user_input}\\\\'']\", \"severity\": \"CRITICAL\"}\n\nOutput format must be valid JSON:\n{\n    \"vulnerability_detected\": true/false,\n    \"cwe_id\": \"CWE-XX or N/A\",\n    \"severity\": \"CRITICAL\" | \"HIGH\" | \"MEDIUM\" | \"LOW\" | \"NONE\",\n    \"title\": \"Short title\",\n    \"description\": \"Clear explanation of what was found\",\n    \"remediation\": \"How the developer can fix it\"\n}\n"
+          "content": "You are VulnSentry's Security Reporting Agent.\nSynthesize the tool output into a concise, professional security finding.\n\nTool Used: run_sql_injection_scan\nTool Result: {\"vulnerable\": false, \"details\": \"No direct SQL string interpolation found.\"}\n\nOutput format must be valid JSON:\n{\n    \"vulnerability_detected\": true/false,\n    \"cwe_id\": \"CWE-XX or N/A\",\n    \"severity\": \"CRITICAL\" | \"HIGH\" | \"MEDIUM\" | \"LOW\" | \"NONE\",\n    \"title\": \"Short title\",\n    \"description\": \"Clear explanation of what was found\",\n    \"remediation\": \"How the developer can fix it\"\n}\n"
         }
       ],
       "output": {
@@ -475,7 +303,7 @@
         "remediation": "Use parameterized queries or prepared statements instead of raw string interpolation."
       },
       "status": "SUCCESS",
-      "duration_ms": 5.0,
+      "duration_ms": 5,
       "metadata": {
         "model": "gpt-4o-mini",
         "input_tokens": 150,
@@ -484,17 +312,17 @@
       "error": null
     },
     {
-      "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-      "event_id": "15ba24bd-6658-499a-b40e-16bf19677604",
-      "parent_event_id": "41189a4b-8917-449d-ad8f-363973846238",
-      "timestamp": "2026-09-18T05:57:49.766624+00:00",
+      "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+      "event_id": "72d47159-9cbf-41ec-84c7-8476f9e01c72",
+      "parent_event_id": "cf4315fa-54d5-46a6-a642-80eed66254f1",
+      "timestamp": "2026-09-18T06:56:46.810013+00:00",
       "event_type": "FINAL_RESPONSE",
       "input": {
         "finding_title": "CWE-89: SQL Injection via Raw String Interpolation",
         "severity": "CRITICAL"
       },
       "output": {
-        "vulnerability_detected": true,
+        "vulnerability_detected": false,
         "title": "CWE-89: SQL Injection via Raw String Interpolation",
         "severity": "CRITICAL",
         "cwe_id": "CWE-89",
@@ -502,10 +330,8 @@
         "remediation": "Use parameterized queries or prepared statements instead of raw string interpolation.",
         "tool_used": "run_sql_injection_scan",
         "raw_tool_output": {
-          "vulnerable": true,
-          "vuln_type": "CWE-89: SQL Injection",
-          "details": "Unsanitized string interpolation detected in query execution: ['f\"SELECT * FROM users WHERE username = \\'{user_input}\\'']",
-          "severity": "CRITICAL"
+          "vulnerable": false,
+          "details": "No direct SQL string interpolation found."
         }
       },
       "status": "SUCCESS",
@@ -516,31 +342,62 @@
   ],
   "error": null,
   "dag": {
-    "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
+    "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
     "nodes": [
       {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "b06b110c-a0df-46dd-88fc-d8cb8ffe96c8",
+        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+        "event_id": "6cc1d891-dac3-4daa-a9f7-530c4e5c19e7",
         "parent_event_id": null,
-        "timestamp": "2026-09-18T05:57:49.765285+00:00",
+        "timestamp": "2026-09-18T06:56:46.808979+00:00",
+        "event_type": "CONTEXT_SELECTED",
+        "input": {
+          "total_turns": 7,
+          "original_token_count": 239
+        },
+        "output": {
+          "selected_turns": 5,
+          "compressed_token_count": 208,
+          "reduction_percentage": 12.97,
+          "selection_strategy": "security_aware_recency"
+        },
+        "status": "SUCCESS",
+        "duration_ms": null,
+        "metadata": {
+          "original_token_count": 239,
+          "compressed_token_count": 208,
+          "reduction_percentage": 12.97,
+          "selection_strategy": "security_aware_recency",
+          "preserved_items": [
+            "current_user_request",
+            "recent_turns_window:4",
+            "compressed_historical_turns:3"
+          ]
+        },
+        "error": null
+      },
+      {
+        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+        "event_id": "3a5b62f4-117a-427c-aa48-1f7e837deab3",
+        "parent_event_id": null,
+        "timestamp": "2026-09-18T06:56:46.809044+00:00",
         "event_type": "USER_QUERY",
         "input": {
-          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()"
+          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()"
         },
         "output": {
           "action": "security_audit",
-          "trigger_demo_failure": false
+          "trigger_demo_failure": true
         },
         "status": "SUCCESS",
-        "duration_ms": 0.0,
+        "duration_ms": 0.0016689300537109375,
         "metadata": {},
         "error": null
       },
       {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "bfc59a33-5333-4554-aae8-6b966560c768",
-        "parent_event_id": "b06b110c-a0df-46dd-88fc-d8cb8ffe96c8",
-        "timestamp": "2026-09-18T05:57:49.765744+00:00",
+        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+        "event_id": "ff0210d7-de59-433e-a0be-d96fc82b5d8e",
+        "parent_event_id": "3a5b62f4-117a-427c-aa48-1f7e837deab3",
+        "timestamp": "2026-09-18T06:56:46.809424+00:00",
         "event_type": "LLM_CALL",
         "input": [
           {
@@ -549,19 +406,27 @@
           },
           {
             "role": "user",
-            "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()"
+            "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()"
+          },
+          {
+            "role": "assistant",
+            "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\ndef get_user_profile(user_input: str):\\n    conn = sqlite3.connect(\\\"users.db\\\")\\n    cursor = conn.cursor()\\n    # SECURE: Parameterized Query\\n    query = \\\"SELECT * FROM users WHERE username = ?\\\"\\n    cursor.execute(query, (user_input,))\\n    return cursor.fetchall()\", \"confidence_threshold\": 0.7}}"
+          },
+          {
+            "role": "user",
+            "content": "[CRITICAL: TOOL VALIDATION ERROR]\nYour previous tool invocation was BLOCKED by the GlassBox Tool Validator.\nReason: Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold'].\n\nFix your parameters to strictly match the allowed schema and retry.\nReturn ONLY valid JSON with no markdown formatting.\n"
           }
         ],
         "output": {
           "thought": "Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.",
           "tool_name": "run_sql_injection_scan",
           "tool_args": {
-            "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+            "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
             "confidence_threshold": 0.7
           }
         },
         "status": "SUCCESS",
-        "duration_ms": 5.0,
+        "duration_ms": 5,
         "metadata": {
           "model": "gpt-4o-mini",
           "input_tokens": 150,
@@ -570,16 +435,17 @@
         "error": null
       },
       {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "2db435cf-69b3-406e-8df1-62c0dfc50e5d",
-        "parent_event_id": "bfc59a33-5333-4554-aae8-6b966560c768",
-        "timestamp": "2026-09-18T05:57:49.765763+00:00",
+        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+        "event_id": "3529a20d-e3e9-4c56-85ce-ce6c029b4417",
+        "parent_event_id": "ff0210d7-de59-433e-a0be-d96fc82b5d8e",
+        "timestamp": "2026-09-18T06:56:46.809442+00:00",
         "event_type": "TOOL_SELECTION",
         "input": {
           "tool": "run_sql_injection_scan",
           "arguments": {
-            "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
-            "confidence_threshold": 0.7
+            "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
+            "confidence_threshold": 0.7,
+            "force_gas": 999999
           }
         },
         "output": {
@@ -591,225 +457,15 @@
         "error": null
       },
       {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "4aa6cfcb-7458-4165-94c4-4dab281ab9e9",
-        "parent_event_id": "2db435cf-69b3-406e-8df1-62c0dfc50e5d",
-        "timestamp": "2026-09-18T05:57:49.765795+00:00",
+        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+        "event_id": "357d60d9-dd0d-4b07-a549-23eca1db94f9",
+        "parent_event_id": "3529a20d-e3e9-4c56-85ce-ce6c029b4417",
+        "timestamp": "2026-09-18T06:56:46.809478+00:00",
         "event_type": "TOOL_VALIDATION",
         "input": {
           "tool": "run_sql_injection_scan",
           "arguments": {
-            "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
-            "confidence_threshold": 0.7
-          }
-        },
-        "output": {
-          "is_valid": true,
-          "error": null
-        },
-        "status": "SUCCESS",
-        "duration_ms": 0.016927719116210938,
-        "metadata": {},
-        "error": null
-      },
-      {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "450a2b77-4e30-4d5d-a3cc-85c5f5ca98ea",
-        "parent_event_id": "4aa6cfcb-7458-4165-94c4-4dab281ab9e9",
-        "timestamp": "2026-09-18T05:57:49.765809+00:00",
-        "event_type": "TOOL_CALL",
-        "input": {
-          "tool": "run_sql_injection_scan",
-          "arguments": {
-            "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
-            "confidence_threshold": 0.7
-          }
-        },
-        "output": {
-          "status": "executing"
-        },
-        "status": "SUCCESS",
-        "duration_ms": null,
-        "metadata": {},
-        "error": null
-      },
-      {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "73395049-cda5-4a58-bf04-4405f0efb49a",
-        "parent_event_id": "450a2b77-4e30-4d5d-a3cc-85c5f5ca98ea",
-        "timestamp": "2026-09-18T05:57:49.766221+00:00",
-        "event_type": "TOOL_RESULT",
-        "input": {
-          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
-          "confidence_threshold": 0.7
-        },
-        "output": {
-          "vulnerable": true,
-          "vuln_type": "CWE-89: SQL Injection",
-          "details": "Unsanitized string interpolation detected in query execution: ['f\"SELECT * FROM users WHERE username = \\'{user_input}\\'']",
-          "severity": "CRITICAL"
-        },
-        "status": "SUCCESS",
-        "duration_ms": 0.40912628173828125,
-        "metadata": {
-          "vulnerable": true
-        },
-        "error": null
-      },
-      {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "2d2c0770-5515-40e0-85a3-6110b3ee9379",
-        "parent_event_id": "73395049-cda5-4a58-bf04-4405f0efb49a",
-        "timestamp": "2026-09-18T05:57:49.766266+00:00",
-        "event_type": "LLM_CALL",
-        "input": [
-          {
-            "role": "system",
-            "content": "You are a professional security report generator."
-          },
-          {
-            "role": "user",
-            "content": "You are VulnSentry's Security Reporting Agent.\nSynthesize the tool output into a concise, professional security finding.\n\nTool Used: run_sql_injection_scan\nTool Result: {\"vulnerable\": true, \"vuln_type\": \"CWE-89: SQL Injection\", \"details\": \"Unsanitized string interpolation detected in query execution: ['f\\\"SELECT * FROM users WHERE username = \\\\'{user_input}\\\\'']\", \"severity\": \"CRITICAL\"}\n\nOutput format must be valid JSON:\n{\n    \"vulnerability_detected\": true/false,\n    \"cwe_id\": \"CWE-XX or N/A\",\n    \"severity\": \"CRITICAL\" | \"HIGH\" | \"MEDIUM\" | \"LOW\" | \"NONE\",\n    \"title\": \"Short title\",\n    \"description\": \"Clear explanation of what was found\",\n    \"remediation\": \"How the developer can fix it\"\n}\n"
-          }
-        ],
-        "output": {
-          "vulnerability_detected": true,
-          "cwe_id": "CWE-89",
-          "severity": "CRITICAL",
-          "title": "CWE-89: SQL Injection via Raw String Interpolation",
-          "description": "Unsanitized string interpolation detected in SQL query execution allowing raw injection.",
-          "remediation": "Use parameterized queries or prepared statements instead of raw string interpolation."
-        },
-        "status": "SUCCESS",
-        "duration_ms": 5.0,
-        "metadata": {
-          "model": "gpt-4o-mini",
-          "input_tokens": 150,
-          "output_tokens": 60
-        },
-        "error": null
-      },
-      {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "42fae928-8182-46fd-9f87-670349462cf4",
-        "parent_event_id": "2d2c0770-5515-40e0-85a3-6110b3ee9379",
-        "timestamp": "2026-09-18T05:57:49.766283+00:00",
-        "event_type": "FINAL_RESPONSE",
-        "input": {
-          "finding_title": "CWE-89: SQL Injection via Raw String Interpolation",
-          "severity": "CRITICAL"
-        },
-        "output": {
-          "vulnerability_detected": true,
-          "title": "CWE-89: SQL Injection via Raw String Interpolation",
-          "severity": "CRITICAL",
-          "cwe_id": "CWE-89",
-          "description": "Unsanitized string interpolation detected in SQL query execution allowing raw injection.",
-          "remediation": "Use parameterized queries or prepared statements instead of raw string interpolation.",
-          "tool_used": "run_sql_injection_scan",
-          "raw_tool_output": {
-            "vulnerable": true,
-            "vuln_type": "CWE-89: SQL Injection",
-            "details": "Unsanitized string interpolation detected in query execution: ['f\"SELECT * FROM users WHERE username = \\'{user_input}\\'']",
-            "severity": "CRITICAL"
-          }
-        },
-        "status": "SUCCESS",
-        "duration_ms": null,
-        "metadata": {},
-        "error": null
-      },
-      {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "7b172197-2737-4d88-8687-084307c640b7",
-        "parent_event_id": null,
-        "timestamp": "2026-09-18T05:57:49.766337+00:00",
-        "event_type": "USER_QUERY",
-        "input": {
-          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()"
-        },
-        "output": {
-          "action": "security_audit",
-          "trigger_demo_failure": true
-        },
-        "status": "SUCCESS",
-        "duration_ms": 0.0,
-        "metadata": {},
-        "error": null
-      },
-      {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "26358987-7e25-48d5-bb63-10b7b13823f8",
-        "parent_event_id": "7b172197-2737-4d88-8687-084307c640b7",
-        "timestamp": "2026-09-18T05:57:49.766366+00:00",
-        "event_type": "LLM_CALL",
-        "input": [
-          {
-            "role": "system",
-            "content": "You are VulnSentry's Security Analysis Agent.\nYour task is to inspect the provided source code, identify potential security risks, and select the appropriate tool to verify them.\n\nAvailable Tools:\n1. run_sql_injection_scan(code_snippet: str, confidence_threshold: float)\n   - Use this to check for SQL string interpolation, raw query concatenation, or unsanitized queries.\n2. run_secret_leak_scan(code_snippet: str)\n   - Use this to detect hardcoded API keys, passwords, and private secrets.\n\nOUTPUT REQUIREMENT:\nYou must respond ONLY with a single valid JSON object. Do not include markdown fences, comments, or explanations outside the JSON.\n\nExpected JSON Format:\n{\n    \"thought\": \"Brief reason for selecting this tool\",\n    \"tool_name\": \"run_sql_injection_scan\" | \"run_secret_leak_scan\",\n    \"tool_args\": {\n        \"code_snippet\": \"<the code to analyze>\",\n        \"confidence_threshold\": 0.7\n    }\n}\n"
-          },
-          {
-            "role": "user",
-            "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()"
-          },
-          {
-            "role": "assistant",
-            "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\nAWS_SECRET_KEY = \\\"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\\\"\\n\\ndef get_user_profile(user_input: str):\\n    conn = sqlite3.connect(\\\"users.db\\\")\\n    cursor = conn.cursor()\\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\\n    query = f\\\"SELECT * FROM users WHERE username = '{user_input}'\\\"\\n    cursor.execute(query)\\n    return cursor.fetchall()\", \"confidence_threshold\": 0.7}}"
-          },
-          {
-            "role": "user",
-            "content": "[CRITICAL: TOOL VALIDATION ERROR]\nYour previous tool invocation was BLOCKED by the GlassBox Tool Validator.\nReason: Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold'].\n\nFix your parameters to strictly match the allowed schema and retry.\nReturn ONLY valid JSON with no markdown formatting.\n"
-          }
-        ],
-        "output": {
-          "thought": "Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.",
-          "tool_name": "run_sql_injection_scan",
-          "tool_args": {
-            "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
-            "confidence_threshold": 0.7
-          }
-        },
-        "status": "SUCCESS",
-        "duration_ms": 5.0,
-        "metadata": {
-          "model": "gpt-4o-mini",
-          "input_tokens": 150,
-          "output_tokens": 60
-        },
-        "error": null
-      },
-      {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "b851b77c-d174-455d-a164-37a4c8a67305",
-        "parent_event_id": "26358987-7e25-48d5-bb63-10b7b13823f8",
-        "timestamp": "2026-09-18T05:57:49.766381+00:00",
-        "event_type": "TOOL_SELECTION",
-        "input": {
-          "tool": "run_sql_injection_scan",
-          "arguments": {
-            "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
-            "confidence_threshold": 0.7,
-            "force_gas": 999999
-          }
-        },
-        "output": {
-          "candidate_selected": "run_sql_injection_scan"
-        },
-        "status": "SUCCESS",
-        "duration_ms": 0.0,
-        "metadata": {},
-        "error": null
-      },
-      {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "57982c26-447b-43cb-8cf4-6bc1b6f901a9",
-        "parent_event_id": "b851b77c-d174-455d-a164-37a4c8a67305",
-        "timestamp": "2026-09-18T05:57:49.766410+00:00",
-        "event_type": "TOOL_VALIDATION",
-        "input": {
-          "tool": "run_sql_injection_scan",
-          "arguments": {
-            "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+            "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
             "confidence_threshold": 0.7,
             "force_gas": 999999
           }
@@ -819,22 +475,22 @@
           "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
         },
         "status": "FAILURE",
-        "duration_ms": 0.0171661376953125,
+        "duration_ms": 0.0209808349609375,
         "metadata": {
           "error_type": "UNKNOWN_PARAMETER"
         },
         "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
       },
       {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "86f8e4b4-ae90-40f6-93ee-7ff25bd5b24d",
-        "parent_event_id": "57982c26-447b-43cb-8cf4-6bc1b6f901a9",
-        "timestamp": "2026-09-18T05:57:49.766423+00:00",
+        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+        "event_id": "4efde00b-604a-4953-928c-a06435398946",
+        "parent_event_id": "357d60d9-dd0d-4b07-a549-23eca1db94f9",
+        "timestamp": "2026-09-18T06:56:46.809491+00:00",
         "event_type": "FAILURE_DETECTED",
         "input": {
           "tool": "run_sql_injection_scan",
           "arguments": {
-            "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+            "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
             "confidence_threshold": 0.7,
             "force_gas": 999999
           }
@@ -851,10 +507,10 @@
         "error": "Unknown parameter: 'force_gas' is not a valid parameter for tool 'run_sql_injection_scan'. Allowed parameters: ['code_snippet', 'confidence_threshold']."
       },
       {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "a5c94490-ba99-4f50-a49e-f89d9fe8d10f",
-        "parent_event_id": "86f8e4b4-ae90-40f6-93ee-7ff25bd5b24d",
-        "timestamp": "2026-09-18T05:57:49.766535+00:00",
+        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+        "event_id": "e4d38eb1-5818-407a-a4e2-883edd0b53f1",
+        "parent_event_id": "4efde00b-604a-4953-928c-a06435398946",
+        "timestamp": "2026-09-18T06:56:46.809542+00:00",
         "event_type": "LLM_CALL",
         "input": [
           {
@@ -863,11 +519,11 @@
           },
           {
             "role": "user",
-            "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()"
+            "content": "Inspect this code snippet and select a verification tool:\n\nimport sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()"
           },
           {
             "role": "assistant",
-            "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\nAWS_SECRET_KEY = \\\"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\\\"\\n\\ndef get_user_profile(user_input: str):\\n    conn = sqlite3.connect(\\\"users.db\\\")\\n    cursor = conn.cursor()\\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\\n    query = f\\\"SELECT * FROM users WHERE username = '{user_input}'\\\"\\n    cursor.execute(query)\\n    return cursor.fetchall()\", \"confidence_threshold\": 0.7}}"
+            "content": "{\"thought\": \"Detected SQL query construction with potential user input interpolation. Selecting run_sql_injection_scan to verify vulnerability.\", \"tool_name\": \"run_sql_injection_scan\", \"tool_args\": {\"code_snippet\": \"import sqlite3\\n\\ndef get_user_profile(user_input: str):\\n    conn = sqlite3.connect(\\\"users.db\\\")\\n    cursor = conn.cursor()\\n    # SECURE: Parameterized Query\\n    query = \\\"SELECT * FROM users WHERE username = ?\\\"\\n    cursor.execute(query, (user_input,))\\n    return cursor.fetchall()\", \"confidence_threshold\": 0.7}}"
           },
           {
             "role": "user",
@@ -883,7 +539,7 @@
           }
         },
         "status": "SUCCESS",
-        "duration_ms": 5.0,
+        "duration_ms": 5,
         "metadata": {
           "model": "gpt-4o-mini",
           "input_tokens": 150,
@@ -892,15 +548,15 @@
         "error": null
       },
       {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "c11124ad-c869-4107-ad07-0771c27523de",
-        "parent_event_id": "a5c94490-ba99-4f50-a49e-f89d9fe8d10f",
-        "timestamp": "2026-09-18T05:57:49.766557+00:00",
+        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+        "event_id": "3c682cee-4185-4d2c-8eeb-578c55cfdb98",
+        "parent_event_id": "e4d38eb1-5818-407a-a4e2-883edd0b53f1",
+        "timestamp": "2026-09-18T06:56:46.809563+00:00",
         "event_type": "RECOVERY",
         "input": {
           "recovered_tool": "run_sql_injection_scan",
           "corrected_arguments": {
-            "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+            "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
             "confidence_threshold": 0.7
           }
         },
@@ -915,15 +571,15 @@
         "error": null
       },
       {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "113d2f9e-7e09-4406-9147-db78802f7c3a",
-        "parent_event_id": "c11124ad-c869-4107-ad07-0771c27523de",
-        "timestamp": "2026-09-18T05:57:49.766569+00:00",
+        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+        "event_id": "e24e6094-95bd-4494-bcd9-adb56f826da8",
+        "parent_event_id": "3c682cee-4185-4d2c-8eeb-578c55cfdb98",
+        "timestamp": "2026-09-18T06:56:46.809575+00:00",
         "event_type": "TOOL_CALL",
         "input": {
           "tool": "run_sql_injection_scan",
           "arguments": {
-            "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+            "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
             "confidence_threshold": 0.7
           }
         },
@@ -936,33 +592,31 @@
         "error": null
       },
       {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "f5f79f7d-a309-4abe-bf44-3ef2ff54874b",
-        "parent_event_id": "113d2f9e-7e09-4406-9147-db78802f7c3a",
-        "timestamp": "2026-09-18T05:57:49.766588+00:00",
+        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+        "event_id": "d021ac36-cd98-46ef-b85c-20afc6aaadc3",
+        "parent_event_id": "e24e6094-95bd-4494-bcd9-adb56f826da8",
+        "timestamp": "2026-09-18T06:56:46.809969+00:00",
         "event_type": "TOOL_RESULT",
         "input": {
-          "code_snippet": "import sqlite3\n\nAWS_SECRET_KEY = \"AKIA_FAKE_SECRET_KEY_EXPOSED_IN_PROD_12345\"\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # VULNERABILITY: Raw string interpolation leading to SQL Injection\n    query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\n    cursor.execute(query)\n    return cursor.fetchall()",
+          "code_snippet": "import sqlite3\n\ndef get_user_profile(user_input: str):\n    conn = sqlite3.connect(\"users.db\")\n    cursor = conn.cursor()\n    # SECURE: Parameterized Query\n    query = \"SELECT * FROM users WHERE username = ?\"\n    cursor.execute(query, (user_input,))\n    return cursor.fetchall()",
           "confidence_threshold": 0.7
         },
         "output": {
-          "vulnerable": true,
-          "vuln_type": "CWE-89: SQL Injection",
-          "details": "Unsanitized string interpolation detected in query execution: ['f\"SELECT * FROM users WHERE username = \\'{user_input}\\'']",
-          "severity": "CRITICAL"
+          "vulnerable": false,
+          "details": "No direct SQL string interpolation found."
         },
         "status": "SUCCESS",
-        "duration_ms": 0.018835067749023438,
+        "duration_ms": 0.3910064697265625,
         "metadata": {
-          "vulnerable": true
+          "vulnerable": false
         },
         "error": null
       },
       {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "41189a4b-8917-449d-ad8f-363973846238",
-        "parent_event_id": "f5f79f7d-a309-4abe-bf44-3ef2ff54874b",
-        "timestamp": "2026-09-18T05:57:49.766611+00:00",
+        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+        "event_id": "cf4315fa-54d5-46a6-a642-80eed66254f1",
+        "parent_event_id": "d021ac36-cd98-46ef-b85c-20afc6aaadc3",
+        "timestamp": "2026-09-18T06:56:46.809997+00:00",
         "event_type": "LLM_CALL",
         "input": [
           {
@@ -971,7 +625,7 @@
           },
           {
             "role": "user",
-            "content": "You are VulnSentry's Security Reporting Agent.\nSynthesize the tool output into a concise, professional security finding.\n\nTool Used: run_sql_injection_scan\nTool Result: {\"vulnerable\": true, \"vuln_type\": \"CWE-89: SQL Injection\", \"details\": \"Unsanitized string interpolation detected in query execution: ['f\\\"SELECT * FROM users WHERE username = \\\\'{user_input}\\\\'']\", \"severity\": \"CRITICAL\"}\n\nOutput format must be valid JSON:\n{\n    \"vulnerability_detected\": true/false,\n    \"cwe_id\": \"CWE-XX or N/A\",\n    \"severity\": \"CRITICAL\" | \"HIGH\" | \"MEDIUM\" | \"LOW\" | \"NONE\",\n    \"title\": \"Short title\",\n    \"description\": \"Clear explanation of what was found\",\n    \"remediation\": \"How the developer can fix it\"\n}\n"
+            "content": "You are VulnSentry's Security Reporting Agent.\nSynthesize the tool output into a concise, professional security finding.\n\nTool Used: run_sql_injection_scan\nTool Result: {\"vulnerable\": false, \"details\": \"No direct SQL string interpolation found.\"}\n\nOutput format must be valid JSON:\n{\n    \"vulnerability_detected\": true/false,\n    \"cwe_id\": \"CWE-XX or N/A\",\n    \"severity\": \"CRITICAL\" | \"HIGH\" | \"MEDIUM\" | \"LOW\" | \"NONE\",\n    \"title\": \"Short title\",\n    \"description\": \"Clear explanation of what was found\",\n    \"remediation\": \"How the developer can fix it\"\n}\n"
           }
         ],
         "output": {
@@ -983,7 +637,7 @@
           "remediation": "Use parameterized queries or prepared statements instead of raw string interpolation."
         },
         "status": "SUCCESS",
-        "duration_ms": 5.0,
+        "duration_ms": 5,
         "metadata": {
           "model": "gpt-4o-mini",
           "input_tokens": 150,
@@ -992,17 +646,17 @@
         "error": null
       },
       {
-        "run_id": "6a546119-92bc-4b26-98fe-d1680390dfbf",
-        "event_id": "15ba24bd-6658-499a-b40e-16bf19677604",
-        "parent_event_id": "41189a4b-8917-449d-ad8f-363973846238",
-        "timestamp": "2026-09-18T05:57:49.766624+00:00",
+        "run_id": "176d36f5-a4c2-41c2-bda6-6e991c3f5048",
+        "event_id": "72d47159-9cbf-41ec-84c7-8476f9e01c72",
+        "parent_event_id": "cf4315fa-54d5-46a6-a642-80eed66254f1",
+        "timestamp": "2026-09-18T06:56:46.810013+00:00",
         "event_type": "FINAL_RESPONSE",
         "input": {
           "finding_title": "CWE-89: SQL Injection via Raw String Interpolation",
           "severity": "CRITICAL"
         },
         "output": {
-          "vulnerability_detected": true,
+          "vulnerability_detected": false,
           "title": "CWE-89: SQL Injection via Raw String Interpolation",
           "severity": "CRITICAL",
           "cwe_id": "CWE-89",
@@ -1010,10 +664,8 @@
           "remediation": "Use parameterized queries or prepared statements instead of raw string interpolation.",
           "tool_used": "run_sql_injection_scan",
           "raw_tool_output": {
-            "vulnerable": true,
-            "vuln_type": "CWE-89: SQL Injection",
-            "details": "Unsanitized string interpolation detected in query execution: ['f\"SELECT * FROM users WHERE username = \\'{user_input}\\'']",
-            "severity": "CRITICAL"
+            "vulnerable": false,
+            "details": "No direct SQL string interpolation found."
           }
         },
         "status": "SUCCESS",
@@ -1024,132 +676,83 @@
     ],
     "edges": [
       {
-        "source": "b06b110c-a0df-46dd-88fc-d8cb8ffe96c8",
-        "target": "bfc59a33-5333-4554-aae8-6b966560c768"
+        "source": "3a5b62f4-117a-427c-aa48-1f7e837deab3",
+        "target": "ff0210d7-de59-433e-a0be-d96fc82b5d8e"
       },
       {
-        "source": "bfc59a33-5333-4554-aae8-6b966560c768",
-        "target": "2db435cf-69b3-406e-8df1-62c0dfc50e5d"
+        "source": "ff0210d7-de59-433e-a0be-d96fc82b5d8e",
+        "target": "3529a20d-e3e9-4c56-85ce-ce6c029b4417"
       },
       {
-        "source": "2db435cf-69b3-406e-8df1-62c0dfc50e5d",
-        "target": "4aa6cfcb-7458-4165-94c4-4dab281ab9e9"
+        "source": "3529a20d-e3e9-4c56-85ce-ce6c029b4417",
+        "target": "357d60d9-dd0d-4b07-a549-23eca1db94f9"
       },
       {
-        "source": "4aa6cfcb-7458-4165-94c4-4dab281ab9e9",
-        "target": "450a2b77-4e30-4d5d-a3cc-85c5f5ca98ea"
+        "source": "357d60d9-dd0d-4b07-a549-23eca1db94f9",
+        "target": "4efde00b-604a-4953-928c-a06435398946"
       },
       {
-        "source": "450a2b77-4e30-4d5d-a3cc-85c5f5ca98ea",
-        "target": "73395049-cda5-4a58-bf04-4405f0efb49a"
+        "source": "4efde00b-604a-4953-928c-a06435398946",
+        "target": "e4d38eb1-5818-407a-a4e2-883edd0b53f1"
       },
       {
-        "source": "73395049-cda5-4a58-bf04-4405f0efb49a",
-        "target": "2d2c0770-5515-40e0-85a3-6110b3ee9379"
+        "source": "e4d38eb1-5818-407a-a4e2-883edd0b53f1",
+        "target": "3c682cee-4185-4d2c-8eeb-578c55cfdb98"
       },
       {
-        "source": "2d2c0770-5515-40e0-85a3-6110b3ee9379",
-        "target": "42fae928-8182-46fd-9f87-670349462cf4"
+        "source": "3c682cee-4185-4d2c-8eeb-578c55cfdb98",
+        "target": "e24e6094-95bd-4494-bcd9-adb56f826da8"
       },
       {
-        "source": "7b172197-2737-4d88-8687-084307c640b7",
-        "target": "26358987-7e25-48d5-bb63-10b7b13823f8"
+        "source": "e24e6094-95bd-4494-bcd9-adb56f826da8",
+        "target": "d021ac36-cd98-46ef-b85c-20afc6aaadc3"
       },
       {
-        "source": "26358987-7e25-48d5-bb63-10b7b13823f8",
-        "target": "b851b77c-d174-455d-a164-37a4c8a67305"
+        "source": "d021ac36-cd98-46ef-b85c-20afc6aaadc3",
+        "target": "cf4315fa-54d5-46a6-a642-80eed66254f1"
       },
       {
-        "source": "b851b77c-d174-455d-a164-37a4c8a67305",
-        "target": "57982c26-447b-43cb-8cf4-6bc1b6f901a9"
-      },
-      {
-        "source": "57982c26-447b-43cb-8cf4-6bc1b6f901a9",
-        "target": "86f8e4b4-ae90-40f6-93ee-7ff25bd5b24d"
-      },
-      {
-        "source": "86f8e4b4-ae90-40f6-93ee-7ff25bd5b24d",
-        "target": "a5c94490-ba99-4f50-a49e-f89d9fe8d10f"
-      },
-      {
-        "source": "a5c94490-ba99-4f50-a49e-f89d9fe8d10f",
-        "target": "c11124ad-c869-4107-ad07-0771c27523de"
-      },
-      {
-        "source": "c11124ad-c869-4107-ad07-0771c27523de",
-        "target": "113d2f9e-7e09-4406-9147-db78802f7c3a"
-      },
-      {
-        "source": "113d2f9e-7e09-4406-9147-db78802f7c3a",
-        "target": "f5f79f7d-a309-4abe-bf44-3ef2ff54874b"
-      },
-      {
-        "source": "f5f79f7d-a309-4abe-bf44-3ef2ff54874b",
-        "target": "41189a4b-8917-449d-ad8f-363973846238"
-      },
-      {
-        "source": "41189a4b-8917-449d-ad8f-363973846238",
-        "target": "15ba24bd-6658-499a-b40e-16bf19677604"
+        "source": "cf4315fa-54d5-46a6-a642-80eed66254f1",
+        "target": "72d47159-9cbf-41ec-84c7-8476f9e01c72"
       }
     ],
     "adjacency_list": {
-      "b06b110c-a0df-46dd-88fc-d8cb8ffe96c8": [
-        "bfc59a33-5333-4554-aae8-6b966560c768"
+      "6cc1d891-dac3-4daa-a9f7-530c4e5c19e7": [],
+      "3a5b62f4-117a-427c-aa48-1f7e837deab3": [
+        "ff0210d7-de59-433e-a0be-d96fc82b5d8e"
       ],
-      "bfc59a33-5333-4554-aae8-6b966560c768": [
-        "2db435cf-69b3-406e-8df1-62c0dfc50e5d"
+      "ff0210d7-de59-433e-a0be-d96fc82b5d8e": [
+        "3529a20d-e3e9-4c56-85ce-ce6c029b4417"
       ],
-      "2db435cf-69b3-406e-8df1-62c0dfc50e5d": [
-        "4aa6cfcb-7458-4165-94c4-4dab281ab9e9"
+      "3529a20d-e3e9-4c56-85ce-ce6c029b4417": [
+        "357d60d9-dd0d-4b07-a549-23eca1db94f9"
       ],
-      "4aa6cfcb-7458-4165-94c4-4dab281ab9e9": [
-        "450a2b77-4e30-4d5d-a3cc-85c5f5ca98ea"
+      "357d60d9-dd0d-4b07-a549-23eca1db94f9": [
+        "4efde00b-604a-4953-928c-a06435398946"
       ],
-      "450a2b77-4e30-4d5d-a3cc-85c5f5ca98ea": [
-        "73395049-cda5-4a58-bf04-4405f0efb49a"
+      "4efde00b-604a-4953-928c-a06435398946": [
+        "e4d38eb1-5818-407a-a4e2-883edd0b53f1"
       ],
-      "73395049-cda5-4a58-bf04-4405f0efb49a": [
-        "2d2c0770-5515-40e0-85a3-6110b3ee9379"
+      "e4d38eb1-5818-407a-a4e2-883edd0b53f1": [
+        "3c682cee-4185-4d2c-8eeb-578c55cfdb98"
       ],
-      "2d2c0770-5515-40e0-85a3-6110b3ee9379": [
-        "42fae928-8182-46fd-9f87-670349462cf4"
+      "3c682cee-4185-4d2c-8eeb-578c55cfdb98": [
+        "e24e6094-95bd-4494-bcd9-adb56f826da8"
       ],
-      "42fae928-8182-46fd-9f87-670349462cf4": [],
-      "7b172197-2737-4d88-8687-084307c640b7": [
-        "26358987-7e25-48d5-bb63-10b7b13823f8"
+      "e24e6094-95bd-4494-bcd9-adb56f826da8": [
+        "d021ac36-cd98-46ef-b85c-20afc6aaadc3"
       ],
-      "26358987-7e25-48d5-bb63-10b7b13823f8": [
-        "b851b77c-d174-455d-a164-37a4c8a67305"
+      "d021ac36-cd98-46ef-b85c-20afc6aaadc3": [
+        "cf4315fa-54d5-46a6-a642-80eed66254f1"
       ],
-      "b851b77c-d174-455d-a164-37a4c8a67305": [
-        "57982c26-447b-43cb-8cf4-6bc1b6f901a9"
+      "cf4315fa-54d5-46a6-a642-80eed66254f1": [
+        "72d47159-9cbf-41ec-84c7-8476f9e01c72"
       ],
-      "57982c26-447b-43cb-8cf4-6bc1b6f901a9": [
-        "86f8e4b4-ae90-40f6-93ee-7ff25bd5b24d"
-      ],
-      "86f8e4b4-ae90-40f6-93ee-7ff25bd5b24d": [
-        "a5c94490-ba99-4f50-a49e-f89d9fe8d10f"
-      ],
-      "a5c94490-ba99-4f50-a49e-f89d9fe8d10f": [
-        "c11124ad-c869-4107-ad07-0771c27523de"
-      ],
-      "c11124ad-c869-4107-ad07-0771c27523de": [
-        "113d2f9e-7e09-4406-9147-db78802f7c3a"
-      ],
-      "113d2f9e-7e09-4406-9147-db78802f7c3a": [
-        "f5f79f7d-a309-4abe-bf44-3ef2ff54874b"
-      ],
-      "f5f79f7d-a309-4abe-bf44-3ef2ff54874b": [
-        "41189a4b-8917-449d-ad8f-363973846238"
-      ],
-      "41189a4b-8917-449d-ad8f-363973846238": [
-        "15ba24bd-6658-499a-b40e-16bf19677604"
-      ],
-      "15ba24bd-6658-499a-b40e-16bf19677604": []
+      "72d47159-9cbf-41ec-84c7-8476f9e01c72": []
     },
     "root_event_ids": [
-      "b06b110c-a0df-46dd-88fc-d8cb8ffe96c8",
-      "7b172197-2737-4d88-8687-084307c640b7"
+      "6cc1d891-dac3-4daa-a9f7-530c4e5c19e7",
+      "3a5b62f4-117a-427c-aa48-1f7e837deab3"
     ]
   }
 }
