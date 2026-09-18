@@ -5,6 +5,7 @@ __pycache__/
 
 # Environments
 .env
+.env*.local
 .venv/
 venv/
 ENV/
@@ -14,13 +15,24 @@ ENV/
 .coverage
 htmlcov/
 
+# Dependencies & Build
+node_modules/
+dashboard/node_modules/
+.next/
+dashboard/.next/
+out/
+dashboard/out/
+build/
+dist/
+*.pptx
+
 # Data & Output
 *.json
 !examples/*.json
-
-# Dependencies & Build
-node_modules/
-*.pptx
+!package*.json
+!tsconfig*.json
+!dashboard/**/*.json
+!data/*.json
 
 # OS
 .DS_Store
