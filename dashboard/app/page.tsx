@@ -1,41 +1,85 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import RunSummary from "./components/RunSummary";
-import FailureAlert from "./components/FailureAlert";
-import ExecutionTimeline from "./components/ExecutionTimeline";
-import EventDetailPanel from "./components/EventDetailPanel";
-import CodeInputPanel from "./components/CodeInputPanel";
-import ContextMetrics from "./components/ContextMetrics";
-import TokenLatencyMetrics from "./components/TokenLatencyMetrics";
-import { TraceEvent, TracePayload } from "./types";
+import React, { useEffect, useState, useMemo } from "react";
+import Navbar from "@/components/Navbar";
+import SecurityFindingsPanel from "@/components/SecurityFindingsPanel";
+import GlassBoxWorkflow from "@/components/GlassBoxWorkflow";
+import FailureDemoCard from "@/components/FailureDemoCard";
+import ContextEngineeringCard from "@/components/ContextEngineeringCard";
+import ExecutionTrace from "@/components/ExecutionTrace";
+import EventDetailDrawer from "@/components/EventDetailDrawer";
+import CodeInputPanel from "@/components/CodeInputPanel";
+import RunMetrics from "@/components/RunMetrics";
+import RunHistory from "@/components/RunHistory";
+import {
+  normalizeTrace,
+  calculateMetrics,
+  extractSecurityFinding,
+  extractFailureDetail,
+  NormalizedTrace,
+  TraceEvent,
+} from "@/lib/trace";
 
 export default function DashboardPage() {
-  const [data, setData] = useState<TracePayload | null>(null);
+  const [traceData, setTraceData] = useState<NormalizedTrace | null>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<string>("all");
   const [selectedEvent, setSelectedEvent] = useState<TraceEvent | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isRunningAudit, setIsRunningAudit] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Load audit trace from API
   const fetchTrace = async () => {
     setIsLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/trace");
       if (!res.ok) {
-        throw new Error(`Failed to load trace: ${res.statusText}`);
+        throw new Error(`Failed to load audit trace (${res.status}: ${res.statusText})`);
       }
-      const payload: TracePayload = await res.json();
-      setData(payload);
-      if (payload.run?.events?.length > 0) {
-        // Default to FAILURE_DETECTED event if present, otherwise the last event
-        const failureEv = payload.run.events.find((e) => e.event_type === "FAILURE_DETECTED");
-        setSelectedEvent(failureEv || payload.run.events[0]);
+      const raw = await res.json();
+      const normalized = normalizeTrace(raw);
+      setTraceData(normalized);
+
+      // Default selected event: failure event if present, else first event
+      if (normalized.events.length > 0) {
+        const failureEv = normalized.events.find(
+          (e) => e.status === "FAILURE" || e.event_type === "FAILURE_DETECTED"
+        );
+        setSelectedEvent(failureEv || normalized.events[0]);
       }
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || "Failed to load audit trace.");
+      setError(err?.message || "Failed to load audit trace from audit_trace.json");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Run audit script via API
+  const handleRunAudit = async () => {
+    setIsRunningAudit(true);
+    try {
+      const res = await fetch("/api/run-audit", { method: "POST" });
+      if (!res.ok) {
+        throw new Error(`Audit execution failed (${res.status})`);
+      }
+      const raw = await res.json();
+      const normalized = normalizeTrace(raw);
+      setTraceData(normalized);
+
+      if (normalized.events.length > 0) {
+        const failureEv = normalized.events.find(
+          (e) => e.status === "FAILURE" || e.event_type === "FAILURE_DETECTED"
+        );
+        setSelectedEvent(failureEv || normalized.events[0]);
+      }
+    } catch (err: any) {
+      console.error("Run audit error:", err);
+      // Fallback reload
+      fetchTrace();
+    } finally {
+      setIsRunningAudit(false);
     }
   };
 
@@ -43,118 +87,181 @@ export default function DashboardPage() {
     fetchTrace();
   }, []);
 
-  if (isLoading && !data) {
+  // Compute active slice based on selected run group
+  const activeRunGroup = useMemo(() => {
+    if (!traceData) return null;
+    return traceData.runGroups.find((g) => g.id === selectedGroupId) || traceData.runGroups[0];
+  }, [traceData, selectedGroupId]);
+
+  const activeEvents = useMemo(() => {
+    if (!activeRunGroup) return traceData?.events || [];
+    return activeRunGroup.events;
+  }, [activeRunGroup, traceData]);
+
+  const activeMetrics = useMemo(() => {
+    if (!traceData) return null;
+    if (selectedGroupId === "all") return traceData.metrics;
+    return calculateMetrics(activeEvents);
+  }, [traceData, selectedGroupId, activeEvents]);
+
+  const activeFinding = useMemo(() => {
+    if (!traceData) return null;
+    if (selectedGroupId === "all") return traceData.finding;
+    return extractSecurityFinding(activeEvents);
+  }, [traceData, selectedGroupId, activeEvents]);
+
+  const activeFailure = useMemo(() => {
+    if (!traceData) return null;
+    if (selectedGroupId === "all") return traceData.failure;
+    return extractFailureDetail(activeEvents);
+  }, [traceData, selectedGroupId, activeEvents]);
+
+  // Extract code snippet from the first event or metadata
+  const auditedCodeSnippet = useMemo(() => {
+    if (!traceData || traceData.events.length === 0) return "";
+    for (const ev of traceData.events) {
+      if (ev.input?.code_snippet) return String(ev.input.code_snippet);
+    }
+    return "";
+  }, [traceData]);
+
+  // Group switch handler
+  const handleSelectGroup = (groupId: string) => {
+    setSelectedGroupId(groupId);
+    if (!traceData) return;
+    const targetGroup = traceData.runGroups.find((g) => g.id === groupId);
+    const eventsToUse = targetGroup ? targetGroup.events : traceData.events;
+    if (eventsToUse.length > 0) {
+      const failEv = eventsToUse.find(
+        (e) => e.status === "FAILURE" || e.event_type === "FAILURE_DETECTED"
+      );
+      setSelectedEvent(failEv || eventsToUse[0]);
+    }
+  };
+
+  // Loading Screen
+  if (isLoading && !traceData) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-300">
-        <div className="h-10 w-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-sm font-mono">Loading VulnSentry GlassBox Trace...</p>
+      <div className="min-h-screen bg-[#070b14] flex flex-col items-center justify-center text-slate-300 font-mono">
+        <div className="h-10 w-10 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <div className="text-sm font-bold text-white">Loading VulnSentry Telemetry...</div>
+        <p className="text-xs text-slate-500 mt-1">Reading audit_trace.json and normalizing execution DAG</p>
       </div>
     );
   }
 
-  if (error && !data) {
+  // Error Screen
+  if (error && !traceData) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-rose-300 p-6">
-        <div className="bg-rose-950/50 border border-rose-800 rounded-xl p-6 max-w-md text-center">
-          <h2 className="text-lg font-bold mb-2">Error Loading Trace</h2>
-          <p className="text-xs text-rose-200 mb-4">{error}</p>
-          <button
-            onClick={fetchTrace}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold"
-          >
-            Retry
-          </button>
+      <div className="min-h-screen bg-[#070b14] flex flex-col items-center justify-center text-slate-300 p-6 font-mono">
+        <div className="bg-[#120e18] border border-rose-800 rounded-lg p-6 max-w-lg text-center shadow-2xl">
+          <div className="text-rose-400 text-2xl mb-2">⚠</div>
+          <h2 className="text-sm font-bold text-rose-300 uppercase tracking-wider mb-2">
+            Failed to Load Execution Trace
+          </h2>
+          <p className="text-xs text-slate-400 mb-4 font-sans">{error}</p>
+          <div className="flex justify-center gap-3">
+            <button
+              onClick={fetchTrace}
+              className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-semibold"
+            >
+              Retry
+            </button>
+            <button
+              onClick={handleRunAudit}
+              className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-semibold border border-slate-700"
+            >
+              Execute python3 run_audit.py
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (!data) return null;
-
-  const events = data.run?.events || [];
+  if (!traceData || !activeMetrics || !activeFinding || !activeFailure) return null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      {/* 7. Run Summary Header */}
-      <RunSummary data={data} onRefresh={fetchTrace} isLoading={isLoading} />
+    <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col selection:bg-indigo-900 selection:text-indigo-200">
+      {/* 1. Top SOC Navbar */}
+      <Navbar
+        runId={traceData.run_id}
+        status={traceData.status}
+        onRunAudit={handleRunAudit}
+        isRunningAudit={isRunningAudit}
+        selectedRunLabel={activeRunGroup?.label || "Full Trace"}
+      />
 
-      {/* Main Dashboard Container */}
-      <main className="flex-1 p-6 space-y-6 max-w-[1600px] mx-auto w-full">
-        {/* 4. Failure Alert Banner (High visibility when failure intercepted) */}
-        {data.failure_details && <FailureAlert failure={data.failure_details} />}
+      {/* 2. Main 3-Column Glass-Box Workspace */}
+      <main className="flex-1 p-4 sm:p-5 max-w-[1780px] mx-auto w-full space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+          {/* ============================================================== */}
+          {/* LEFT COLUMN: Security Findings, Glass-Box Workflow, Failure Demo */}
+          {/* ============================================================== */}
+          <div className="lg:col-span-3 space-y-4">
+            {/* Security Findings Panel (CWE-89) */}
+            <SecurityFindingsPanel finding={activeFinding} />
 
-        {/* 3-Column Core Workspace Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* 2. Execution Timeline (The central visual DAG) - 4 Cols */}
-          <div className="lg:col-span-4 min-h-[550px]">
-            <ExecutionTimeline
-              events={events}
-              selectedEventId={selectedEvent?.event_id || null}
-              onSelectEvent={(ev) => setSelectedEvent(ev)}
+            {/* Why Did This Run Happen? Glass Box workflow */}
+            <GlassBoxWorkflow />
+
+            {/* Failure Demonstration (Blocked force_gas & recovery) */}
+            <FailureDemoCard failure={activeFailure} />
+
+            {/* Context Engineering */}
+            <ContextEngineeringCard context={traceData.context} />
+          </div>
+
+          {/* ============================================================== */}
+          {/* CENTER COLUMN: Execution Trace Timeline & Event Inspection     */}
+          {/* ============================================================== */}
+          <div className="lg:col-span-6 space-y-4">
+            {/* Execution Trace Timeline (Clickable events, filters, search) */}
+            <div className="min-h-[460px]">
+              <ExecutionTrace
+                events={activeEvents}
+                selectedEventId={selectedEvent?.event_id || null}
+                onSelectEvent={(ev) => setSelectedEvent(ev)}
+              />
+            </div>
+
+            {/* Event Detail Drawer / Telemetry Panel */}
+            <div className="min-h-[380px]">
+              <EventDetailDrawer
+                event={selectedEvent}
+                onClose={() => setSelectedEvent(null)}
+              />
+            </div>
+
+            {/* Target Code Snippet Being Audited */}
+            <CodeInputPanel code={auditedCodeSnippet} />
+          </div>
+
+          {/* ============================================================== */}
+          {/* RIGHT COLUMN: SOC Telemetry Metrics & Run History Switcher      */}
+          {/* ============================================================== */}
+          <div className="lg:col-span-3 space-y-4">
+            {/* 9 SOC Run Metrics */}
+            <RunMetrics metrics={activeMetrics} />
+
+            {/* Run History & Multi-Scan Switcher */}
+            <RunHistory
+              runGroups={traceData.runGroups}
+              selectedGroupId={selectedGroupId}
+              onSelectGroup={handleSelectGroup}
             />
-          </div>
-
-          {/* Center Column: Event Detail & Target Code - 5 Cols */}
-          <div className="lg:col-span-5 flex flex-col space-y-6 min-h-[550px]">
-            {/* 3. Event Detail Panel (Inspecting 11 Required Fields) */}
-            <div className="flex-1 min-h-[300px]">
-              <EventDetailPanel event={selectedEvent} />
-            </div>
-
-            {/* 1. Code / Input Panel */}
-            <div className="h-[250px]">
-              <CodeInputPanel code={data.code_snippet} />
-            </div>
-          </div>
-
-          {/* Right Column: Telemetry & Verified Findings - 3 Cols */}
-          <div className="lg:col-span-3 flex flex-col space-y-6">
-            {/* 5. Context Compression Metrics */}
-            <ContextMetrics metrics={data.context_metrics} />
-
-            {/* 6. Token / Latency Metrics */}
-            <TokenLatencyMetrics events={events} />
-
-            {/* Final Security Finding Card */}
-            {data.finding && (
-              <div className="bg-slate-900 border border-rose-800/80 rounded-xl p-5 shadow-xl">
-                <div className="flex items-center space-x-2 pb-2 mb-2 border-b border-slate-800">
-                  <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping"></span>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-rose-300">
-                    Verified Security Finding
-                  </h3>
-                </div>
-                <h4 className="text-sm font-bold text-white mb-1.5 leading-snug">
-                  {data.finding.title}
-                </h4>
-                <div className="flex gap-2 mb-2">
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-700">
-                    {data.finding.severity}
-                  </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                    {data.finding.cwe_id}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-300 mb-2.5 leading-relaxed">
-                  {data.finding.description}
-                </p>
-                <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
-                  <span className="text-[10px] font-semibold text-emerald-400 block mb-1 uppercase tracking-wider">
-                    Remediation
-                  </span>
-                  <pre className="text-[11px] font-mono text-slate-300 whitespace-pre-wrap">
-                    {data.finding.remediation}
-                  </pre>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-900 py-3 text-center text-xs text-slate-500 font-mono">
-        VulnSentry &bull; GlassBox Execution Tracer &bull; Deterministic Guardrails
+      {/* 3. Footer */}
+      <footer className="border-t border-slate-900/80 py-3 px-4 text-center text-[11px] text-slate-500 font-mono flex flex-col sm:flex-row items-center justify-between max-w-[1780px] mx-auto w-full">
+        <div>
+          VulnSentry &bull; Glass-Box Autonomous Security & Exploit Auditor
+        </div>
+        <div className="text-slate-600 mt-1 sm:mt-0">
+          Deterministic Guardrails &bull; Pre-Execution Validation &bull; Zero Hallucinations
+        </div>
       </footer>
     </div>
   );
