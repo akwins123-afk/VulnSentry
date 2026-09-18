@@ -4,7 +4,18 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const rawReq = await req.text();
+    let body: any = {};
+    try {
+      body = JSON.parse(rawReq);
+    } catch {
+      try {
+        const cleaned = rawReq.replace(/\\'/g, "'").replace(/\\x([0-9a-fA-F]{2})/g, "\\u00$1");
+        body = JSON.parse(cleaned);
+      } catch {
+        body = {};
+      }
+    }
     const {
       prompt = "",
       code = "",
@@ -86,7 +97,18 @@ STRICT OUTPUT RULES:
       });
     }
 
-    const data = await res.json();
+    const rawText = await res.text();
+    let data: any = {};
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      try {
+        const cleaned = rawText.replace(/[\x00-\x1F\x7F-\x9F]/g, " ");
+        data = JSON.parse(cleaned);
+      } catch {
+        data = {};
+      }
+    }
     const candidate = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
     // Sanitize any meta-planning or scratchpad artifacts
